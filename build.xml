@@ -69,7 +69,7 @@
 
     <target name="-post-init">
         <property name="dcraw.src.dir" location="vendor_src/dcraw"/>
-        <property name="dcraw.build.dir" location="${build.dir}/dcraw"/>
+        <property name="dcraw.build.dir" location="${dist.dir}/plugins/dcraw"/>
         <property file="build-config.properties"/>
 
         <echo message="cygwin.home.dir=${cygwin.home.dir}"/>
@@ -99,14 +99,16 @@
     <target name="native-dist-windows" depends="compile-dcraw,jar"
             description="Build DCRAW native binaries on Windows using Cygwin.">
         <copy file="${cygwin.home.dir}/bin/cygwin1.dll" todir="${dcraw.build.dir}"/>
-        <zip basedir="${build.dir}" zipfile="${dist.dir}/dcraw-native-bin-windows.zip">
+        <zip basedir="${dist.dir}/plugins" zipfile="${dist.dir}/dcraw-native-bin-windows.zip">
+            <include name="*.jar"/>
             <include name="dcraw/*"/>
         </zip>
     </target>
 
     <target name="native-dist-linux" depends="compile-dcraw,jar"
             description="Build DCRAW native binaries on Linux.">
-        <tar basedir="${build.dir}" tarfile="${dist.dir}/dcraw-native-bin-linux.tar">
+        <tar basedir="${dist.dir}/plugins" tarfile="${dist.dir}/dcraw-native-bin-linux.tar">
+            <include name="ij-dcraw_.jar"/>
             <include name="dcraw/*"/>
         </tar>
         <gzip src="${dist.dir}/dcraw-native-bin-linux.tar" destfile="${dist.dir}/dcraw-native-bin-linux.tar.gz"/>
