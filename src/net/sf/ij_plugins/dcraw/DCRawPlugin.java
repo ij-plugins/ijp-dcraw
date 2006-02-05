@@ -52,9 +52,9 @@ public class DCRawPlugin implements PlugIn {
                     "or through DCRAW home page.\n" +
                     "By default, the Reader looks for the DCRAW binary in subdirectory 'dcraw'\n" +
                     "of ImageJ plugins folder. Alternative location can be specified by adding\n" +
-                    "'dcrawBinary.path' to ImageJ properties file IJ_Props.txt located in ImageJ\n" +
+                    "'" + Prefs.KEY_PREFIX + PROPERTY_DCRAW_BIN + "' to ImageJ properties file IJ_Props.txt located in ImageJ\n" +
                     "home directory. Example line that should be added to IJ_Props.txt:\n" +
-                    "    dcrawBinary.path=/apps/bin/dcraw.exe\n" +
+                    "    " + Prefs.KEY_PREFIX + PROPERTY_DCRAW_BIN + "=/apps/bin/dcraw.exe\n" +
                     "Reading of 48 bit RGB images requires ImageJ v.1.35p or newer.";
 
 
@@ -216,9 +216,9 @@ public class DCRawPlugin implements PlugIn {
                         + "' does not point to an existing DCRAW executable ["
                         + dcrawBinFile.getAbsolutePath() + "]");
             }
-        } else if (Prefs.getString(PROPERTY_DCRAW_BIN, null) != null) {
+        } else if (Prefs.get(PROPERTY_DCRAW_BIN, null) != null) {
             // Try to read from ImageJ properties
-            final String path = System.getProperty(PROPERTY_DCRAW_BIN);
+            final String path = Prefs.get(PROPERTY_DCRAW_BIN, null);
             dcrawBinFile = new File(path);
             if (!dcrawBinFile.exists()) {
                 throw new DCRawWrapperException("ImageJ property '" + PROPERTY_DCRAW_BIN
