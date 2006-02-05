@@ -20,9 +20,7 @@
  */
 package net.sf.ij_plugins.dcraw;
 
-import ij.IJ;
-import ij.ImagePlus;
-import ij.ImageStack;
+import ij.*;
 import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
 import ij.plugin.PGM_Reader;
@@ -41,27 +39,59 @@ import java.util.List;
  */
 public class DCRawPlugin implements PlugIn {
 
-    private static final String TITLE = "Open RAW image";
-    private String dcrawFileName = "/usr/bin/dcraw";
+    private static final String PROPERTY_DCRAW_BIN = "dcrawBinary.path";
+    private static final String TITLE = "DCRAW Reader";
+    private static final String ABOUT =
+            "The Reader opens digital camera raw images using DCRAW program created by\n" +
+                    "David Coffin. Full list of supported cameras can be found at DCRAW home page:\n" +
+                    "   http://www.cybercom.net/~dcoffin/dcraw/\n" +
+                    "\n" +
+                    "The Reader requires the DCRAW binary. Versions for various operating systems\n" +
+                    "can be downloaded through the Reader home page:\n" +
+                    "    http://ij-plugins.sourceforge.net/plugins/dcraw\n" +
+                    "or through DCRAW home page.\n" +
+                    "By default, the Reader looks for the DCRAW binary in subdirectory 'dcraw'\n" +
+                    "of ImageJ plugins folder. Alternative location can be specified by adding\n" +
+                    "'dcrawBinary.path' to ImageJ properties file IJ_Props.txt located in ImageJ\n" +
+                    "home directory. Example line that should be added to IJ_Props.txt:\n" +
+                    "    dcrawBinary.path=/apps/bin/dcraw.exe\n" +
+                    "Reading of 48 bit RGB images requires ImageJ v.1.35p or newer.";
 
 
     public void run(final String arg) {
 
-        // Establish location of DCRAW executable
-        final String dcrawPath = ij.Menus.getPlugInsPath() + File.separator + dcrawFileName;
-        final File dcrawFile = new File(dcrawPath);
-        if (!dcrawFile.exists()) {
-            IJ.error("Invalid path to DCRAW executable: '" + dcrawFile.getAbsolutePath() + "'.");
+        final String title = TITLE + " (v." + DCRawVersion.getInstance() + ")";
+
+        if ("about".equalsIgnoreCase(arg)) {
+            IJ.showMessage("About " + title, ABOUT);
             return;
         }
 
+        // Establish location of DCRAW executable
+        final File dcrawFile;
+        try {
+            dcrawFile = locateDCRAW();
+        } catch (DCRawWrapperException e) {
+            e.printStackTrace();
+            IJ.error(title, e.getMessage());
+            IJ.showMessage("About " + title, ABOUT);
+            return;
+        }
+
+        if (!dcrawFile.exists()) {
+            IJ.error("Invalid path to DCRAW executable: '" + dcrawFile.getAbsolutePath() + "'.");
+            IJ.showMessage("About " + title, ABOUT);
+            return;
+        }
+
+        log("DCRAW binary: " + dcrawFile.getAbsolutePath());
+
         // Ask for location of the RAW file to read
-        final OpenDialog openDialog = new OpenDialog(TITLE, null);
+        final OpenDialog openDialog = new OpenDialog("Open", null);
         if (openDialog.getFileName() == null) {
             // No selection
             return;
         }
-
 
         final File rawFile = new File(openDialog.getDirectory(), openDialog.getFileName());
         IJ.showStatus("Opening RAW file: " + rawFile.getName());
@@ -71,7 +101,7 @@ public class DCRawPlugin implements PlugIn {
         final boolean removePPM = !ppmFile.exists();
 
         // Ask for DCRAW options
-        final GenericDialog dialog = new GenericDialog("'" + TITLE + "' Options");
+        final GenericDialog dialog = new GenericDialog(title);
 
         // Auto whitebalance
         dialog.addCheckbox("Use automatic whitebalance", false);
@@ -98,7 +128,7 @@ public class DCRawPlugin implements PlugIn {
         final List commandList = new ArrayList();
 
         // First put DCRAW executable
-        commandList.add(dcrawPath);
+        commandList.add(dcrawFile.getAbsolutePath());
         // Turn on verbose messages
         commandList.add("-v");
 
@@ -115,17 +145,20 @@ public class DCRawPlugin implements PlugIn {
 
         // Run DCRAW
         final String[] command = (String[]) commandList.toArray(new String[commandList.size()]);
-        if (IJ.debugMode) {
-            IJ.log("DCRAW command line elements:");
-            for (int i = 0; i < command.length; i++) {
-                IJ.log("  " + command[i]);
+        {
+            final StringBuffer commandOptions = new StringBuffer();
+            for (int i = 1; i < command.length; i++) {
+                commandOptions.append(command[i]).append(" ");
             }
+            log("DCRAW command line: " + commandOptions);
         }
+
         try {
             executeCommand(command);
         } catch (DCRawWrapperException e) {
             e.printStackTrace();
             IJ.error(e.getMessage());
+            IJ.showMessage("About " + title, ABOUT);
             return;
         }
 
@@ -140,7 +173,10 @@ public class DCRawPlugin implements PlugIn {
         try {
             stack = reader.openFile(ppmFile.getAbsolutePath());
         } catch (IOException e) {
-            IJ.error(TITLE, e.getMessage());
+            IJ.error(title, e.getMessage());
+            if (removePPM) {
+                ppmFile.delete();
+            }
             return;
         }
 
@@ -150,7 +186,13 @@ public class DCRawPlugin implements PlugIn {
 
         // Remove PPM if it did not exist
         if (removePPM) {
-//            ppmFile.delete();
+            ppmFile.delete();
+        }
+    }
+
+    private static void log(final String message) {
+        if (IJ.debugMode) {
+            IJ.log(message);
         }
     }
 
@@ -163,6 +205,43 @@ public class DCRawPlugin implements PlugIn {
         }
     }
 
+    private static File locateDCRAW() throws DCRawWrapperException {
+        final File dcrawBinFile;
+        if (System.getProperty(PROPERTY_DCRAW_BIN, null) != null) {
+            // Try to read from a system property
+            final String path = System.getProperty(PROPERTY_DCRAW_BIN);
+            dcrawBinFile = new File(path);
+            if (!dcrawBinFile.exists()) {
+                throw new DCRawWrapperException("System property '" + PROPERTY_DCRAW_BIN
+                        + "' does not point to an existing DCRAW executable ["
+                        + dcrawBinFile.getAbsolutePath() + "]");
+            }
+        } else if (Prefs.getString(PROPERTY_DCRAW_BIN, null) != null) {
+            // Try to read from ImageJ properties
+            final String path = System.getProperty(PROPERTY_DCRAW_BIN);
+            dcrawBinFile = new File(path);
+            if (!dcrawBinFile.exists()) {
+                throw new DCRawWrapperException("ImageJ property '" + PROPERTY_DCRAW_BIN
+                        + "' (IJ_Prefs.txt) does not point to an existing DCRAW executable ["
+                        + dcrawBinFile.getAbsolutePath() + "]");
+            }
+        } else if (Menus.getPlugInsPath() != null) {
+            // Try to locate in plugins directory
+            final String path = Menus.getPlugInsPath() + File.separator
+                    + (IJ.isWindows() ? "dcraw/dcraw.exe" : "dcraw/dcraw");
+            dcrawBinFile = new File(path);
+            if (!dcrawBinFile.exists()) {
+                throw new DCRawWrapperException(
+                        "Unable to find DCRAW binary in ImageJ plugins folder. File does not exist: '"
+                                + dcrawBinFile.getAbsolutePath() + "'.");
+            }
+        } else {
+            throw new DCRawWrapperException("Unable to find DCRAW binary.");
+        }
+
+        return dcrawBinFile;
+    }
+
     private static String executeCommand(final String[] command) throws DCRawWrapperException {
 
         final Process process;
@@ -172,8 +251,8 @@ public class DCRawPlugin implements PlugIn {
             throw new DCRawWrapperException("IO Error executing system command: '" + command[0] + "'.", e);
         }
 
-        final StreamGrabber errorStreamGrabber = new StreamGrabber(process.getErrorStream(), "DCRAW: ");
-        final StreamGrabber outputStreamGrabber = new StreamGrabber(process.getInputStream(), "dcraw: ");
+        final StreamGrabber errorStreamGrabber = new StreamGrabber(process.getErrorStream(), "DCRAW ERROR: ");
+        final StreamGrabber outputStreamGrabber = new StreamGrabber(process.getInputStream(), "DCRAW: ");
 
         try {
 
@@ -239,10 +318,12 @@ public class DCRawPlugin implements PlugIn {
         public void run() {
             try {
                 final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                String line = null;
+                String line;
                 while ((line = reader.readLine()) != null) {
                     data.append(line).append('\n');
-                    IJ.showStatus(statusPrefix + line);
+                    final String message = statusPrefix + line;
+                    IJ.showStatus(message);
+                    log(message);
                 }
                 reader.close();
             } catch (final IOException exception) {
