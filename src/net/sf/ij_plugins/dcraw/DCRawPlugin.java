@@ -251,7 +251,7 @@ public class DCRawPlugin implements PlugIn {
             throw new DCRawWrapperException("IO Error executing system command: '" + command[0] + "'.", e);
         }
 
-        final StreamGrabber errorStreamGrabber = new StreamGrabber(process.getErrorStream(), "DCRAW ERROR: ");
+        final StreamGrabber errorStreamGrabber = new StreamGrabber(process.getErrorStream(), "DCRAW: ");
         final StreamGrabber outputStreamGrabber = new StreamGrabber(process.getInputStream(), "DCRAW: ");
 
         try {
