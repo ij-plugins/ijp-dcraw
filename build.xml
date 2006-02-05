@@ -66,4 +66,51 @@
     nbproject/build-impl.xml file. 
 
     -->
+
+    <target name="-post-init">
+        <property name="dcraw.src.dir" location="vendor_src/dcraw"/>
+        <property name="dcraw.build.dir" location="${build.dir}/dcraw"/>
+        <property file="build-config.properties"/>
+
+        <echo message="cygwin.home.dir=${cygwin.home.dir}"/>
+    </target>
+
+    <!--
+    ======================================
+    DCRAW NATIVE BINARIES BUILDING SECTION
+    ======================================
+    -->
+
+    <!-- Compile DCRAW C sources -->
+    <target name="compile-dcraw" depends="init">
+        <mkdir dir="${dcraw.build.dir}"/>
+        <exec executable="gcc">
+            <arg value="-O4"/>
+            <arg value="-static"/>
+            <arg value="-o"/>
+            <arg file="${dcraw.build.dir}/dcraw"/>
+            <arg file="${dcraw.src.dir}/dcraw.c"/>
+            <arg value="-ljpeg"/>
+            <arg value="-llcms"/>
+            <arg value="-lm"/>
+        </exec>
+    </target>
+
+    <target name="native-dist-windows" depends="compile-dcraw,jar"
+            description="Build DCRAW native binaries on Windows using Cygwin.">
+        <copy file="${cygwin.home.dir}/bin/cygwin1.dll" todir="${dcraw.build.dir}"/>
+        <zip basedir="${build.dir}" zipfile="${dist.dir}/dcraw-native-bin-windows.zip">
+            <include name="dcraw/*"/>
+        </zip>
+    </target>
+
+    <target name="native-dist-linux" depends="compile-dcraw,jar"
+            description="Build DCRAW native binaries on Linux.">
+        <tar basedir="${build.dir}" tarfile="${dist.dir}/dcraw-native-bin-linux.tar">
+            <include name="dcraw/*"/>
+        </tar>
+        <gzip src="${dist.dir}/dcraw-native-bin-linux.tar" destfile="${dist.dir}/dcraw-native-bin-linux.tar.gz"/>
+        <delete file="${dist.dir}/dcraw-native-bin-linux.tar"/>
+    </target>
+
 </project>
