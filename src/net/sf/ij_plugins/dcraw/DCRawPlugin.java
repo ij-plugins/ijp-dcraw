@@ -39,10 +39,10 @@ import java.util.List;
  */
 public class DCRawPlugin implements PlugIn {
 
-    private static final String PROPERTY_DCRAW_BIN = "dcrawBinary.path";
-    private static final String TITLE = "DCRAW Reader";
+    private static final String PROPERTY_DCRAW_BIN = "dcrawExecutable.path";
+    private static final String TITLE = "DCRaw Reader";
     private static final String ABOUT =
-            "The Reader opens digital camera raw images using DCRAW program created by\n" +
+            "The Digital Camera Raw Reader opens over 200 raw image formats using DCRAW program created by\n" +
                     "David Coffin. Full list of supported cameras can be found at DCRAW home page:\n" +
                     "   http://www.cybercom.net/~dcoffin/dcraw/\n" +
                     "\n" +
