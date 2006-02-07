@@ -107,10 +107,15 @@
 
     <target name="native-dist-linux" depends="compile-dcraw,jar"
             description="Build DCRAW native binaries on Linux.">
-        <tar basedir="${dist.dir}/plugins" tarfile="${dist.dir}/ij-dcraw_native-bin-linux.tar">
-            <include name="ij-dcraw_.jar"/>
-            <include name="dcraw/*"/>
-        </tar>
+        
+        <!-- Use native tar to preserve executable attrubutes of dcraw -->
+        <exec executable="tar" dir="${dist.dir}/plugins">
+            <arg value="-cvf"/>
+            <arg value="../ij-dcraw_native-bin-linux.tar"/>
+            <arg value="ij-dcraw_.jar"/>
+            <arg value="dcraw"/>
+        </exec>
+        
         <gzip src="${dist.dir}/ij-dcraw_native-bin-linux.tar" destfile="${dist.dir}/ij-dcraw_native-bin-linux.tar.gz"/>
         <delete file="${dist.dir}/ij-dcraw_native-bin-linux.tar"/>
     </target>
