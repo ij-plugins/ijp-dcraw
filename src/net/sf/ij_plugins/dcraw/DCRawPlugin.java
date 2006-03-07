@@ -41,21 +41,22 @@ public class DCRawPlugin implements PlugIn {
 
     private static final String PROPERTY_DCRAW_BIN = "dcrawExecutable.path";
     private static final String TITLE = "DCRaw Reader";
-    private static final String ABOUT =
-            "The Digital Camera Raw Reader opens over 200 raw image formats using DCRAW program created by\n" +
-                    "David Coffin. Full list of supported cameras can be found at DCRAW home page:\n" +
-                    "   http://www.cybercom.net/~dcoffin/dcraw/\n" +
-                    "\n" +
-                    "The Reader requires the DCRAW binary. Versions for various operating systems\n" +
-                    "can be downloaded through the Reader home page:\n" +
-                    "    http://ij-plugins.sourceforge.net/plugins/dcraw\n" +
-                    "or through DCRAW home page.\n" +
-                    "By default, the Reader looks for the DCRAW binary in subdirectory 'dcraw'\n" +
-                    "of ImageJ plugins folder. Alternative location can be specified by adding\n" +
-                    "'" + Prefs.KEY_PREFIX + PROPERTY_DCRAW_BIN + "' to ImageJ properties file IJ_Props.txt located in ImageJ\n" +
-                    "home directory. Example line that should be added to IJ_Props.txt:\n" +
-                    "    " + Prefs.KEY_PREFIX + PROPERTY_DCRAW_BIN + "=/apps/bin/dcraw.exe\n" +
-                    "Reading of 48 bit RGB images requires ImageJ v.1.35p or newer.";
+    private static final String ABOUT = "" +
+            "The Digital Camera Raw Reader plugin opens over 200 raw image formats using\n" +
+            "DCRAW program created by Dave Coffin. Full list of supported cameras can be\n" +
+            "found at DCRAW home page: http://www.cybercom.net/~dcoffin/dcraw/\n" +
+            "---\n" +
+            "The DCRaw Reader plugin requires the DCRAW binary. Versions for various operating\n" +
+            "systems can be downloaded through the Reader home page:\n" +
+            "http://ij-plugins.sourceforge.net/plugins/dcraw/ or through DCRAW home page.\n" +
+            "---\n" +
+            "By default, the DCRaw Reader plugin looks for the DCRAW binary in subdirectory\n" +
+            "'dcraw' of ImageJ plugins folder. Alternative location can be specified by adding\n" +
+            "property '" + Prefs.KEY_PREFIX + PROPERTY_DCRAW_BIN
+            + "' to ImageJ properties file IJ_Props.txt located in\n" +
+            "ImageJ home directory. Example line that should be added to IJ_Props.txt:\n" +
+            Prefs.KEY_PREFIX + PROPERTY_DCRAW_BIN + "=/apps/bin/dcraw.exe\n" +
+            "Reading of 48 bit RGB images requires ImageJ v.1.35p or newer.";
 
 
     public void run(final String arg) {
