@@ -71,9 +71,19 @@
         <property name="dcraw.src.dir" location="vendor_src/dcraw"/>
         <property name="dcraw.build.dir" location="${dist.dir}/plugins/dcraw"/>
         <property file="build-config.properties"/>
-
+        <property name="sandbox.dir" location="${basedir}/sandbox"/>
+        <property name="plugins.dir" location="${sandbox.dir}/plugins"/>
         <echo message="cygwin.home.dir=${cygwin.home.dir}"/>
     </target>
+
+    <target name="setup-plugins" depends="jar" description="Prepare plugins for testing with ImageJ">
+        <copy file="${dist.jar}" todir="${plugins.dir}"/>
+    </target>
+
+    <target name="run-ImageJ" depends="setup-plugins" description="Build and run ImageJ.">
+        <java maxmemory="256m" jar="lib/ij.jar" fork="yes" dir="${sandbox.dir}"/>
+    </target>
+
 
     <!--
     ======================================
@@ -107,7 +117,7 @@
 
     <target name="native-dist-linux" depends="compile-dcraw,jar"
             description="Build DCRAW native binaries on Linux.">
-        
+
         <!-- Use native tar to preserve executable attrubutes of dcraw -->
         <exec executable="tar" dir="${dist.dir}/plugins">
             <arg value="-cvf"/>
@@ -115,7 +125,7 @@
             <arg value="ij-dcraw_.jar"/>
             <arg value="dcraw"/>
         </exec>
-        
+
         <gzip src="${dist.dir}/ij-dcraw_native-bin-linux.tar" destfile="${dist.dir}/ij-dcraw_native-bin-linux.tar.gz"/>
         <delete file="${dist.dir}/ij-dcraw_native-bin-linux.tar"/>
     </target>
