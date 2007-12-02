@@ -1,6 +1,6 @@
 /***
  * Image/J Plugins
- * Copyright (C) 2002-2006 Jarek Sacha
+ * Copyright (C) 2002-2007 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -110,7 +110,7 @@ public class DCRawPlugin implements PlugIn {
         // Image format
         final String[][] formatChoice = {
                 {"8-bit non-linear", "16-bit linear"},
-                {"-2", "-4"}
+                {"", "-4"}
         };
         dialog.addChoice("Read as", formatChoice[0], formatChoice[0][0]);
 
