@@ -105,7 +105,11 @@ public class DCRawPlugin implements PlugIn {
         final GenericDialog dialog = new GenericDialog(title);
 
         // Auto whitebalance
-        dialog.addCheckbox("Use automatic whitebalance", false);
+        final String[][] whitebalanceChoice = {
+                {"None", "Camera white balance", "Averaging the entire image"},
+                {"", "-w", "-a"}
+        };
+        dialog.addChoice("White balance", whitebalanceChoice[0], whitebalanceChoice[0][1]);
 
         // Image format
         final String[][] formatChoice = {
@@ -115,8 +119,14 @@ public class DCRawPlugin implements PlugIn {
         dialog.addChoice("Read as", formatChoice[0], formatChoice[0][0]);
 
         // Interpolation quality
-        final String[] interpolationQuality = {"0", "1", "2", "3"};
-        dialog.addChoice("Interpolation quality", interpolationQuality, interpolationQuality[3]);
+        final String[][] interpolationQualityChoice = {
+                {"0 - High-speed, low-quality bilinear",
+                        "1 - Variable Number of Gradients (VNG)",
+                        "2 - Patterned Pixel Grouping (PPG)",
+                        "3 - Adaptive Homogeneity-Directed (AHD)"},
+                {"0", "1", "2", "3"}
+        };
+        dialog.addChoice("Interpolation quality", interpolationQualityChoice[0], interpolationQualityChoice[0][3]);
 
         dialog.showDialog();
 
@@ -126,7 +136,7 @@ public class DCRawPlugin implements PlugIn {
         }
 
         // Command line components
-        final List commandList = new ArrayList();
+        final List<String> commandList = new ArrayList<String>();
 
         // First put DCRAW executable
         commandList.add(dcrawFile.getAbsolutePath());
@@ -134,18 +144,16 @@ public class DCRawPlugin implements PlugIn {
         commandList.add("-v");
 
         // Add options
-        if (dialog.getNextBoolean()) {
-            commandList.add("-a");
-        }
+        commandList.add(whitebalanceChoice[1][dialog.getNextChoiceIndex()]);
         commandList.add(formatChoice[1][dialog.getNextChoiceIndex()]);
         commandList.add("-q");
-        commandList.add(dialog.getNextChoice());
+        commandList.add(interpolationQualityChoice[1][dialog.getNextChoiceIndex()]);
 
         // Add input PPM
         commandList.add(rawFile.getAbsolutePath());
 
         // Run DCRAW
-        final String[] command = (String[]) commandList.toArray(new String[commandList.size()]);
+        final String[] command = commandList.toArray(new String[commandList.size()]);
         {
             final StringBuffer commandOptions = new StringBuffer();
             for (int i = 1; i < command.length; i++) {
