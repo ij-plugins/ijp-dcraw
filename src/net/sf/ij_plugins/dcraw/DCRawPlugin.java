@@ -118,6 +118,8 @@ public class DCRawPlugin implements PlugIn {
         };
         dialog.addChoice("Read as", formatChoice[0], formatChoice[0][0]);
 
+        dialog.addCheckbox("Half size", false);
+
         // Interpolation quality
         final String[][] interpolationQualityChoice = {
                 {"0 - High-speed, low-quality bilinear",
@@ -126,7 +128,10 @@ public class DCRawPlugin implements PlugIn {
                         "3 - Adaptive Homogeneity-Directed (AHD)"},
                 {"0", "1", "2", "3"}
         };
-        dialog.addChoice("Interpolation quality", interpolationQualityChoice[0], interpolationQualityChoice[0][3]);
+        dialog.addChoice("Interpolation quality", interpolationQualityChoice[0], interpolationQualityChoice[0][0]);
+
+        dialog.addCheckbox("Do not rotate or scale pixels (preserve orientation and aspect ratio)", false);
+        dialog.addCheckbox("Show metadata in Result window", false);
 
         dialog.showDialog();
 
@@ -143,14 +148,26 @@ public class DCRawPlugin implements PlugIn {
         // Turn on verbose messages
         commandList.add("-v");
 
+        if (dialog.getNextBoolean()) {
+            // Extract at half size
+            commandList.add("-h");
+        }
+
         // Add options
         commandList.add(whitebalanceChoice[1][dialog.getNextChoiceIndex()]);
         commandList.add(formatChoice[1][dialog.getNextChoiceIndex()]);
         commandList.add("-q");
         commandList.add(interpolationQualityChoice[1][dialog.getNextChoiceIndex()]);
 
+        if (dialog.getNextBoolean()) {
+            // Do not rotate or correct pixel aspect ratio
+            commandList.add("-j");
+        }
+
         // Add input PPM
         commandList.add(rawFile.getAbsolutePath());
+
+        final boolean showMatadata = dialog.getNextBoolean();
 
         // Run DCRAW
         final String[] command = commandList.toArray(new String[commandList.size()]);
@@ -190,8 +207,25 @@ public class DCRawPlugin implements PlugIn {
         }
 
         final ImagePlus imp;
-        imp = new ImagePlus(ppmFile.getName(), stack);
+        imp = new ImagePlus(rawFile.getName(), stack);
         imp.show();
+
+        // Use DCRaw to extract metadata
+        if (showMatadata) {
+            final String[] metadataCommand = new String[]{
+                    dcrawFile.getAbsolutePath(), "-i", "-v", rawFile.getAbsolutePath()};
+            final String metadataOutput;
+            try {
+                metadataOutput = executeCommand(metadataCommand);
+            } catch (DCRawWrapperException e) {
+                e.printStackTrace();
+                IJ.error(e.getMessage());
+                IJ.showMessage("About " + title, ABOUT);
+                return;
+            }
+
+            IJ.write(metadataOutput);
+        }
 
         // Remove PPM if it did not exist
         if (removePPM) {
