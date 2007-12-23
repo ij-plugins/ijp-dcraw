@@ -104,12 +104,12 @@ public class DCRawPlugin implements PlugIn {
         // Ask for DCRAW options
         final GenericDialog dialog = new GenericDialog(title);
 
-        // Auto whitebalance
-        final String[][] whitebalanceChoice = {
+        // Auto white balance
+        final String[][] whiteBalanceChoice = {
                 {"None", "Camera white balance", "Averaging the entire image"},
                 {"", "-w", "-a"}
         };
-        dialog.addChoice("White balance", whitebalanceChoice[0], whitebalanceChoice[0][1]);
+        dialog.addChoice("White balance", whiteBalanceChoice[0], whiteBalanceChoice[0][1]);
 
         // Image format
         final String[][] formatChoice = {
@@ -154,7 +154,7 @@ public class DCRawPlugin implements PlugIn {
         }
 
         // Add options
-        commandList.add(whitebalanceChoice[1][dialog.getNextChoiceIndex()]);
+        commandList.add(whiteBalanceChoice[1][dialog.getNextChoiceIndex()]);
         commandList.add(formatChoice[1][dialog.getNextChoiceIndex()]);
         commandList.add("-q");
         commandList.add(interpolationQualityChoice[1][dialog.getNextChoiceIndex()]);
@@ -329,8 +329,6 @@ public class DCRawPlugin implements PlugIn {
     }
 
     private static class DCRawWrapperException extends Exception {
-        public DCRawWrapperException() {
-        }
 
         public DCRawWrapperException(String message) {
             super(message);
@@ -340,9 +338,6 @@ public class DCRawPlugin implements PlugIn {
             super(message, cause);
         }
 
-        public DCRawWrapperException(Throwable cause) {
-            super(cause);
-        }
     }
 
     /**
