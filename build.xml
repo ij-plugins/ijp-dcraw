@@ -109,6 +109,8 @@
     <target name="native-dist-windows" depends="compile-dcraw,jar"
             description="Build DCRAW native binaries on Windows using Cygwin.">
         <copy file="${cygwin.home.dir}/bin/cygwin1.dll" todir="${dcraw.build.dir}"/>
+        <copy file="${cygwin.home.dir}/bin/cygjpeg-62.dll" todir="${dcraw.build.dir}"/>
+        <copy file="${cygwin.home.dir}/bin/cyglcms-1.dll" todir="${dcraw.build.dir}"/>
         <zip basedir="${dist.dir}/plugins" zipfile="${dist.dir}/ij-dcraw_native-bin-windows.zip">
             <include name="*.jar"/>
             <include name="dcraw/*"/>
