@@ -74,6 +74,9 @@
         <property name="sandbox.dir" location="${basedir}/sandbox"/>
         <property name="plugins.dir" location="${sandbox.dir}/plugins"/>
         <echo message="cygwin.home.dir=${cygwin.home.dir}"/>
+
+        <!-- Create the time stamp -->
+        <tstamp/>        
     </target>
 
     <target name="setup-plugins" depends="jar" description="Prepare plugins for testing with ImageJ">
@@ -131,5 +134,37 @@
         <gzip src="${dist.dir}/ij-dcraw_native-bin-linux.tar" destfile="${dist.dir}/ij-dcraw_native-bin-linux.tar.gz"/>
         <delete file="${dist.dir}/ij-dcraw_native-bin-linux.tar"/>
     </target>
+
+
+    <target name="src-dist-from-cvs" depends="init" description="Package current CVS sources">
+
+        <property name="cvs.root" value=":pserver:anonymous@ij-plugins.cvs.sourceforge.net:/cvsroot/ij-plugins"/>
+        <property name="cvs.module" value="ij-dcraw"/>
+        <property name="checkout.dir" location="${build.dir}/checkout"/>
+        <property name="cvs.dir" location="${checkout.dir}/${cvs.module}"/>
+        <property name="package.name" value="ij-dcraw_"/>
+
+
+        <!-- ................... -->
+        <!-- Source distribution -->
+        <!-- ................... -->
+        <!-- Cleanup CVS checkout directory -->
+        <delete dir="${cvs.dir}"/>
+        <!-- Fresh checkout from CVS -->
+        <echo message="CVS ROOT: ${cvs.root}"/>
+
+        <!-- Checkout wrappers for ImageJ -->
+        <cvs cvsRoot="${cvs.root}"
+             command="checkout -P"
+             package="${cvs.module}"
+
+             dest="${checkout.dir}"/>
+
+        <!-- ZIP source -->
+        <mkdir dir="${dist.dir}"/>
+        <zip basedir="${cvs.dir}"
+             destfile="${dist.dir}/${package.name}_src_${DSTAMP}.zip"/>
+    </target>
+
 
 </project>
