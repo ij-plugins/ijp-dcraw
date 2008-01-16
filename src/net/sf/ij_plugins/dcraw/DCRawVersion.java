@@ -29,11 +29,11 @@ package net.sf.ij_plugins.dcraw;
  * @author Jarek Sacha
  */
 public class DCRawVersion {
-    private static final DCRawVersion ourInstance = new DCRawVersion();
-    private static final String VERSION = "1.1.0";
+    private static final DCRawVersion OUR_INSTANCE = new DCRawVersion();
+    private static final String VERSION = "1.2.0";
 
     public static DCRawVersion getInstance() {
-        return ourInstance;
+        return OUR_INSTANCE;
     }
 
     private DCRawVersion() {
