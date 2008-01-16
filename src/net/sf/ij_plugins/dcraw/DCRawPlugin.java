@@ -20,10 +20,11 @@
  */
 package net.sf.ij_plugins.dcraw;
 
-import ij.*;
+import ij.IJ;
+import ij.Menus;
+import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
-import ij.plugin.PGM_Reader;
 import ij.plugin.PlugIn;
 
 import java.io.*;
@@ -194,21 +195,16 @@ public class DCRawPlugin implements PlugIn {
             return;
         }
         IJ.showStatus("Opening: " + ppmFile.getAbsolutePath());
-        final PGM_Reader reader = new PGM_Reader();
-        final ImageStack stack;
         try {
-            stack = reader.openFile(ppmFile.getAbsolutePath());
-        } catch (IOException e) {
-            IJ.error(title, e.getMessage());
+            IJ.open(ppmFile.getAbsolutePath());
+        } finally {
+            // Remove PPM if it did not exist
             if (removePPM) {
-                ppmFile.delete();
+                if (!ppmFile.delete()) {
+                    IJ.error(TITLE, "Failed to delete PPM file: " + ppmFile.getAbsolutePath());
+                }
             }
-            return;
         }
-
-        final ImagePlus imp;
-        imp = new ImagePlus(rawFile.getName(), stack);
-        imp.show();
 
         // Use DCRaw to extract metadata
         if (showMatadata) {
@@ -225,11 +221,6 @@ public class DCRawPlugin implements PlugIn {
             }
 
             IJ.write(metadataOutput);
-        }
-
-        // Remove PPM if it did not exist
-        if (removePPM) {
-            ppmFile.delete();
         }
     }
 
@@ -330,6 +321,8 @@ public class DCRawPlugin implements PlugIn {
 
     private static class DCRawWrapperException extends Exception {
 
+        private static final long serialVersionUID = 1L;
+
         public DCRawWrapperException(String message) {
             super(message);
         }
@@ -344,9 +337,9 @@ public class DCRawPlugin implements PlugIn {
      * Utility class for grabbing process outputs.
      */
     private static class StreamGrabber extends Thread {
-        final private InputStream inputStream;
-        final private StringBuffer data = new StringBuffer();
-        final private String statusPrefix;
+        private final InputStream inputStream;
+        private final StringBuffer data = new StringBuffer();
+        private final String statusPrefix;
 
         public StreamGrabber(final InputStream inputStream, final String statusPrefix) {
             this.inputStream = inputStream;
