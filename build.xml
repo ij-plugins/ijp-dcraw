@@ -67,6 +67,17 @@
 
     -->
 
+    <!-- path to the svnant libraries. Usually they will be located in ANT_HOME/lib -->
+    <path id="svnant.classpath">
+        <fileset dir="../vendor/svnant/lib">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- load the svn task -->
+    <typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="svnant.classpath"/>
+
+
     <target name="-post-init">
         <property name="dcraw.src.dir" location="vendor_src/dcraw"/>
         <property name="dcraw.build.dir" location="${dist.dir}/plugins/dcraw"/>
@@ -76,7 +87,7 @@
         <echo message="cygwin.home.dir=${cygwin.home.dir}"/>
 
         <!-- Create the time stamp -->
-        <tstamp/>        
+        <tstamp/>
     </target>
 
     <target name="setup-plugins" depends="jar" description="Prepare plugins for testing with ImageJ">
@@ -133,35 +144,33 @@
         <delete file="${dist.dir}/ij-dcraw_native-bin-linux.tar"/>
     </target>
 
+    <target name="src-dist-from-svn" depends="init" description="Package current SVN sources">
 
-    <target name="src-dist-from-cvs" depends="init" description="Package current CVS sources">
-
-        <property name="cvs.root" value=":pserver:anonymous@ij-plugins.cvs.sourceforge.net:/cvsroot/ij-plugins"/>
-        <property name="cvs.module" value="ij-dcraw"/>
+        <property name="svn.repository" value="https://ij-plugins.svn.sourceforge.net/svnroot/ij-plugins"/>
+        <property name="svn.module" value="ij-dcraw"/>
         <property name="checkout.dir" location="${build.dir}/checkout"/>
-        <property name="cvs.dir" location="${checkout.dir}/${cvs.module}"/>
+        <property name="svn.dir" location="${checkout.dir}/${svn.module}"/>
         <property name="package.name" value="ij-dcraw_"/>
 
+        <property name="svnant.latest.url" value="${svn.repository}/trunk/${svn.module}/"/>
+        <!--<property name="svnant.this.url"   url="${svn.repository}/tags/${svn.module}/${svnant.version}/"/>-->
+        <property name="svnant.repository.user" value="guest"/>
+        <property name="svnant.repository.passwd" value=""/>
 
-        <!-- ................... -->
-        <!-- Source distribution -->
-        <!-- ................... -->
-        <!-- Cleanup CVS checkout directory -->
-        <delete dir="${cvs.dir}"/>
-        <!-- Fresh checkout from CVS -->
-        <echo message="CVS ROOT: ${cvs.root}"/>
+        <!-- Checkout latest sources -->
+        <svn username="${svnant.repository.user}" password="${svnant.repository.passwd}">
+            <checkout url="${svnant.latest.url}" revision="HEAD" destPath="${svn.dir}"/>
+        </svn>
 
-        <!-- Checkout wrappers for ImageJ -->
-        <cvs cvsRoot="${cvs.root}"
-             command="checkout -P"
-             package="${cvs.module}"
-
-             dest="${checkout.dir}"/>
+        <!-- Get revision number for checked out source -->
+        <svn>
+            <status path="${svn.dir}" revisionProperty="svn.revision"/>
+        </svn>
 
         <!-- ZIP source -->
         <mkdir dir="${dist.dir}"/>
-        <zip basedir="${cvs.dir}"
-             destfile="${dist.dir}/${package.name}_src_${DSTAMP}.zip"/>
+        <zip basedir="${svn.dir}"
+             destfile="${dist.dir}/${package.name}src_r${svn.revision}_${DSTAMP}.zip"/>
     </target>
 
 
