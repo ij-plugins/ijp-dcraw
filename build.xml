@@ -68,8 +68,9 @@
     -->
 
     <!-- path to the svnant libraries. Usually they will be located in ANT_HOME/lib -->
+    <property name="svnant.lib.dir" location="../vendor/svnant/lib"/>
     <path id="svnant.classpath">
-        <fileset dir="../vendor/svnant/lib">
+        <fileset dir="${svnant.lib.dir}">
             <include name="**/*.jar"/>
         </fileset>
     </path>
