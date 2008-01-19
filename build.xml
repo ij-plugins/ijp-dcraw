@@ -84,7 +84,7 @@
         <property file="build-config.properties"/>
         <property name="sandbox.dir" location="${basedir}/sandbox"/>
         <property name="plugins.dir" location="${sandbox.dir}/plugins"/>
-        <echo message="cygwin.home.dir=${cygwin.home.dir}"/>
+        <property name="cygwin.home.dir" location="c:\apps\cygwin"/>
 
         <!-- Create the time stamp -->
         <tstamp/>
@@ -122,8 +122,15 @@
 
     <target name="native-dist-windows" depends="compile-dcraw,jar"
             description="Build DCRAW native binaries on Windows using Cygwin.">
+        <svn>
+            <status path="${basedir}" revisionProperty="svn.revision"/>
+        </svn>
+
+        <property name="windows.achive" value="ij-dcraw_native-bin-windows_r${svn.revision}_${DSTAMP}"/>
+
         <copy file="${cygwin.home.dir}/bin/cygwin1.dll" todir="${dcraw.build.dir}"/>
-        <zip basedir="${dist.dir}/plugins" zipfile="${dist.dir}/ij-dcraw_native-bin-windows.zip">
+
+        <zip basedir="${dist.dir}/plugins" zipfile="${dist.dir}/${windows.achive}.zip">
             <include name="*.jar"/>
             <include name="dcraw/*"/>
         </zip>
@@ -132,16 +139,22 @@
     <target name="native-dist-linux" depends="compile-dcraw,jar"
             description="Build DCRAW native binaries on Linux.">
 
+        <svn>
+            <status path="${basedir}" revisionProperty="svn.revision"/>
+        </svn>
+
+        <property name="linux.achive" value="ij-dcraw_native-bin-linux_r${svn.revision}_${DSTAMP}"/>
+
         <!-- Use native tar to preserve executable attrubutes of dcraw -->
         <exec executable="tar" dir="${dist.dir}/plugins">
             <arg value="-cvf"/>
-            <arg value="../ij-dcraw_native-bin-linux.tar"/>
+            <arg value="../${linux.achive}.tar"/>
             <arg value="ij-dcraw_.jar"/>
             <arg value="dcraw"/>
         </exec>
 
-        <gzip src="${dist.dir}/ij-dcraw_native-bin-linux.tar" destfile="${dist.dir}/ij-dcraw_native-bin-linux.tar.gz"/>
-        <delete file="${dist.dir}/ij-dcraw_native-bin-linux.tar"/>
+        <gzip src="${dist.dir}/${linux.achive}.tar" destfile="${dist.dir}/${linux.achive}.tar.gz"/>
+        <delete file="${dist.dir}/${linux.achive}.tar"/>
     </target>
 
     <target name="src-dist-from-svn" depends="init" description="Package current SVN sources">
