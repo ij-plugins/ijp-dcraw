@@ -121,13 +121,25 @@
         </exec>
     </target>
 
+    <target name="native-dist-windows-from-svn" depends="src-dist-from-svn"
+            description="Build DCRAW native binaries on Windows from SVN sources.">
+        <ant antfile="build/checkout/ij-dcraw/build.xml" target="native-dist-windows" inheritAll="false">
+            <property name="svnant.lib.dir" value="${svnant.lib.dir}"/>
+            <property name="dist.dir" value="${dist.dir}"/>
+        </ant>
+    </target>
+
+
     <target name="native-dist-windows" depends="compile-dcraw,jar"
             description="Build DCRAW native binaries on Windows using Cygwin.">
+
+        <!-- Get revision number for checked out source -->
         <svn>
             <status path="${basedir}" revisionProperty="svn.revision"/>
         </svn>
 
         <property name="windows.achive" value="ij-dcraw_native-bin-windows_r${svn.revision}_${DSTAMP}"/>
+        <property name="bin.achive" value="ij-dcraw_bin_r${svn.revision}_${DSTAMP}"/>
 
         <copy file="${cygwin.home.dir}/bin/cygwin1.dll" todir="${dcraw.build.dir}"/>
 
@@ -135,16 +147,33 @@
             <include name="*.jar"/>
             <include name="dcraw/*"/>
         </zip>
+
+        <!-- Zip only the plugin JAR -->
+        <zip basedir="${dist.dir}/plugins" zipfile="${dist.dir}/${bin.achive}.zip">
+            <include name="ij-dcraw_.jar"/>
+        </zip>
+
     </target>
+
+
+    <target name="native-dist-linux-from-svn" depends="src-dist-from-svn"
+            description="Build DCRAW native binaries on Linux from SVN sources.">
+        <ant antfile="build/checkout/ij-dcraw/build.xml" target="native-dist-linux" inheritAll="false">
+            <property name="svnant.lib.dir" value="${svnant.lib.dir}"/>
+        </ant>
+    </target>
+
 
     <target name="native-dist-linux" depends="compile-dcraw,jar"
             description="Build DCRAW native binaries on Linux.">
 
+        <!-- Get revision number for checked out source -->
         <svn>
             <status path="${basedir}" revisionProperty="svn.revision"/>
         </svn>
 
         <property name="linux.achive" value="ij-dcraw_native-bin-linux_r${svn.revision}_${DSTAMP}"/>
+        <property name="bin.achive" value="ij-dcraw_bin_r${svn.revision}_${DSTAMP}"/>
 
         <!-- Use native tar to preserve executable attrubutes of dcraw -->
         <exec executable="tar" dir="${dist.dir}/plugins">
@@ -156,6 +185,17 @@
 
         <gzip src="${dist.dir}/${linux.achive}.tar" destfile="${dist.dir}/${linux.achive}.tar.gz"/>
         <delete file="${dist.dir}/${linux.achive}.tar"/>
+
+        <!-- tag.gz only the plugin JAR -->
+        <exec executable="tar" dir="${dist.dir}/plugins">
+            <arg value="-cvf"/>
+            <arg value="../${bin.achive}.tar"/>
+            <arg value="ij-dcraw_.jar"/>
+        </exec>
+
+        <gzip src="${dist.dir}/${bin.achive}.tar" destfile="${dist.dir}/${bin.achive}.tar.gz"/>
+        <delete file="${dist.dir}/${bin.achive}.tar"/>
+
     </target>
 
     <target name="src-dist-from-svn" depends="init" description="Package current SVN sources">
@@ -172,9 +212,15 @@
         <property name="svnant.repository.passwd" value=""/>
 
         <!-- Checkout latest sources -->
-        <svn username="${svnant.repository.user}" password="${svnant.repository.passwd}">
-            <checkout url="${svnant.latest.url}" revision="HEAD" destPath="${svn.dir}"/>
-        </svn>
+        <mkdir dir="${svn.dir}"/>
+        <!--<svn username="${svnant.repository.user}" password="${svnant.repository.passwd}">-->
+        <!--<checkout url="${svnant.latest.url}" revision="HEAD" destPath="${svn.dir}"/>-->
+        <!--</svn>-->
+        <exec executable="svn">
+            <arg value="checkout"/>
+            <arg value="${svnant.latest.url}"/>
+            <arg value="${svn.dir}"/>
+        </exec>
 
         <!-- Get revision number for checked out source -->
         <svn>
