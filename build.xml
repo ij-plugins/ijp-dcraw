@@ -134,6 +134,7 @@
             description="Build DCRAW native binaries on Windows using Cygwin.">
 
         <!-- Get revision number for checked out source -->
+        <echo message="svn.dir = ${basedir}"/>
         <svn>
             <status path="${basedir}" revisionProperty="svn.revision"/>
         </svn>
@@ -168,6 +169,7 @@
             description="Build DCRAW native binaries on Linux.">
 
         <!-- Get revision number for checked out source -->
+        <echo message="svn.dir = ${basedir}"/>
         <svn>
             <status path="${basedir}" revisionProperty="svn.revision"/>
         </svn>
@@ -223,6 +225,7 @@
         </exec>
 
         <!-- Get revision number for checked out source -->
+        <echo message="svn.dir = ${svn.dir}"/>
         <svn>
             <status path="${svn.dir}" revisionProperty="svn.revision"/>
         </svn>
