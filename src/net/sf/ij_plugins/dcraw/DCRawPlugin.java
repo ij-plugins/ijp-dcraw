@@ -342,7 +342,9 @@ public class DCRawPlugin implements PlugIn {
 
     private static void copyFile(final File sourceFile, final File destFile) throws IOException {
         if (!destFile.exists()) {
-            destFile.createNewFile();
+            if (!destFile.createNewFile()) {
+                throw new IOException("Destination file cannot be created: " + destFile.getPath());
+            }
         }
 
         FileChannel source = null;
