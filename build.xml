@@ -131,7 +131,7 @@
     <!--Compile DCRAW C sources-->
     <target name="compile-dcraw" depends="init">
         <mkdir dir="${dcraw.build.dir}"/>
-        <exec executable="gcc">
+        <exec executable="gcc" failonerror="true">
             <arg value="-O4"/>
             <arg value="-static"/>
             <arg value="-o"/>
