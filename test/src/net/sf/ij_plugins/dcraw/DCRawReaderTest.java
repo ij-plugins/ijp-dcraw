@@ -19,14 +19,16 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
+
 package net.sf.ij_plugins.dcraw;
 
+import ij.IJ;
+import ij.ImagePlus;
 import org.junit.Test;
 
 import java.io.File;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 
 /**
@@ -52,10 +54,15 @@ public final class DCRawReaderTest {
 
     @Test
     public void testExecuteCommand() throws DCRawException {
+
+        // Input file
         final File inFile = new File("test/data/IMG_5604.CR2");
         assertTrue(inFile.exists());
 
+        // dcraw wrapper
         final DCRawReader dcRawReader = new DCRawReader();
+
+        // Listen to output messages
         dcRawReader.addLogListener(new DCRawReader.LogListener() {
             @Override
             public void log(String message) {
@@ -63,15 +70,20 @@ public final class DCRawReaderTest {
             }
         });
 
+        // Execute dcraw
         dcRawReader.executeCommand(new String[]{
-                "-v",
-                "-w",
-                "-T",
-                "-j",
-                "-W",
+                "-v", // Print verbose messages
+                "-w", // Use camera white balance, if possible
+                "-T", // Write TIFF instead of PPM
+                "-j", // Don't stretch or rotate raw pixels
+                "-W", // Don't automatically brighten the image
                 inFile.getAbsolutePath()});
 
+        // Cleanup
         dcRawReader.removeAllLogListeners();
 
+        // Load converted file, it is the same location as original raw file but with extension '.tiff'
+        final ImagePlus imp = IJ.openImage("test/data/IMG_5604.tiff");
+        assertNotNull(imp);
     }
 }
