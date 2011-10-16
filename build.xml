@@ -107,7 +107,7 @@
         <property file="build-config.properties"/>
         <property name="sandbox.dir" location="${basedir}/sandbox"/>
         <property name="plugins.dir" location="${sandbox.dir}/plugins"/>
-        <property name="binaries.windows.dir" location="${basedir}/precompiled/win32"/>
+        <property name="binaries.windows.dir" location="${basedir}/binaries/windows"/>
 
         <!-- Create the time stamp -->
         <tstamp/>
