@@ -19,6 +19,7 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
+
 package net.sf.ij_plugins.dcraw;
 
 import ij.IJ;
@@ -34,6 +35,8 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
+
+import static net.sf.ij_plugins.dcraw.DCRawReader.*;
 
 
 /**
@@ -104,6 +107,14 @@ public class DCRawPlugin implements PlugIn {
         }
     }
 
+    private static <T> String[] asStrings(T[] v) {
+        final String[] r = new String[v.length];
+        for (int i = 0; i < r.length; i++) {
+            r[i] = v[i].toString();
+        }
+        return r;
+    }
+
     @Override
     public void run(final String arg) {
 
@@ -154,12 +165,15 @@ public class DCRawPlugin implements PlugIn {
             dialog.addCheckbox("Use_temporary_directory for processing", CONFIG.useTmpDir);
 
             // Auto white balance
-            dialog.addChoice("White_balance", Config.whiteBalanceChoice[0], Config.whiteBalanceChoice[0][CONFIG.whiteBalance]);
+            dialog.addChoice("White_balance", asStrings(WhiteBalanceOption.values()),
+                    CONFIG.whiteBalance.toString());
 
-            dialog.addCheckbox("Do_not_automatically_brighten the image", CONFIG.doNotAutomaticallyBrightenTheImage);
+            dialog.addCheckbox("Do_not_automatically_brighten the image",
+                    CONFIG.doNotAutomaticallyBrightenTheImage);
 
             // -o [0-5]  Output colorspace (raw,sRGB,Adobe,Wide,ProPhoto,XYZ)
-            dialog.addChoice("Output_colorspace", Config.outputColorSpaceChoice[0], Config.outputColorSpaceChoice[0][CONFIG.outputColorSpace]);
+            dialog.addChoice("Output_colorspace", asStrings(OutputColorSpaceOption.values()),
+                    CONFIG.outputColorSpace.toString());
 
             // -d        Document mode (no color, no interpolation)
             dialog.addCheckbox("Document_mode (no color, no interpolation)", CONFIG.documentMode);
@@ -168,14 +182,16 @@ public class DCRawPlugin implements PlugIn {
             dialog.addCheckbox("Document_mode_without_scaling (totally raw)", CONFIG.documentModeWithoutScaling);
 
             // Image bit format
-            dialog.addChoice("Read_as", Config.formatChoice[0], Config.formatChoice[0][CONFIG.format]);
+            dialog.addChoice("Read_as", asStrings(FormatOption.values()), CONFIG.format.toString());
 
             // Interpolation quality
-            dialog.addChoice("Interpolation quality", Config.interpolationQualityChoice[0], Config.interpolationQualityChoice[0][CONFIG.interpolationQuality]);
+            dialog.addChoice("Interpolation quality", asStrings(InterpolationQualityOption.values()),
+                    CONFIG.interpolationQuality.toString());
 
             dialog.addCheckbox("Half_size", CONFIG.halfSize);
 
-            dialog.addCheckbox("Do_not_rotate or scale pixels (preserve orientation and aspect ratio)", CONFIG.doNotRotate);
+            dialog.addCheckbox("Do_not_rotate or scale pixels (preserve orientation and aspect ratio)",
+                    CONFIG.doNotRotate);
 
             dialog.addCheckbox("Show_metadata in Result window", CONFIG.showMetadata);
 
@@ -192,13 +208,13 @@ public class DCRawPlugin implements PlugIn {
             }
 
             CONFIG.useTmpDir = dialog.getNextBoolean();
-            CONFIG.whiteBalance = dialog.getNextChoiceIndex();
+            CONFIG.whiteBalance = WhiteBalanceOption.byName(dialog.getNextChoice());
             CONFIG.doNotAutomaticallyBrightenTheImage = dialog.getNextBoolean();
-            CONFIG.outputColorSpace = dialog.getNextChoiceIndex();
+            CONFIG.outputColorSpace = OutputColorSpaceOption.byName(dialog.getNextChoice());
             CONFIG.documentMode = dialog.getNextBoolean();
             CONFIG.documentModeWithoutScaling = dialog.getNextBoolean();
-            CONFIG.format = dialog.getNextChoiceIndex();
-            CONFIG.interpolationQuality = dialog.getNextChoiceIndex();
+            CONFIG.format = FormatOption.byName(dialog.getNextChoice());
+            CONFIG.interpolationQuality = InterpolationQualityOption.byName(dialog.getNextChoice());
             CONFIG.halfSize = dialog.getNextBoolean();
             CONFIG.doNotRotate = dialog.getNextBoolean();
             CONFIG.showMetadata = dialog.getNextBoolean();
@@ -250,7 +266,7 @@ public class DCRawPlugin implements PlugIn {
             commandList.add("-T");
 
             // White balance
-            commandList.add(Config.whiteBalanceChoice[1][CONFIG.whiteBalance]);
+            commandList.add(CONFIG.whiteBalance.getOption());
 
             // Brightness adjustment
             if (CONFIG.doNotAutomaticallyBrightenTheImage) {
@@ -259,7 +275,7 @@ public class DCRawPlugin implements PlugIn {
 
             // Colorspace
             commandList.add("-o");
-            commandList.add(Config.outputColorSpaceChoice[1][CONFIG.outputColorSpace]);
+            commandList.add(CONFIG.outputColorSpace.getOption());
 
             // -d Document mode (no color, no interpolation)
             if (CONFIG.documentMode) {
@@ -272,11 +288,11 @@ public class DCRawPlugin implements PlugIn {
             }
 
             // Image bit format
-            commandList.add(Config.formatChoice[1][CONFIG.format]);
+            commandList.add(CONFIG.format.getOption());
 
             // Interpolation quality
             commandList.add("-q");
-            commandList.add(Config.interpolationQualityChoice[1][CONFIG.interpolationQuality]);
+            commandList.add(CONFIG.interpolationQuality.getOption());
 
             // Extract at half size
             if (CONFIG.halfSize) {
@@ -346,40 +362,17 @@ public class DCRawPlugin implements PlugIn {
                 }
             }
         }
+
     }
 
     private static class Config {
-        private static final String[][] whiteBalanceChoice = {
-                {"None", "Camera white balance", "Averaging the entire image"},
-                {"", "-w", "-a"}
-        };
-        private static final String[][] outputColorSpaceChoice = {{
-                "0 - raw",
-                "1 - sRGB",
-                "2 - Adobe",
-                "3 - Wide",
-                "4 - ProPhoto",
-                "5 - XYZ"},
-                {"0", "1", "2", "3", "4", "5"}
-        };
-        private static final String[][] formatChoice = {
-                {"8-bit", "16-bit", "16-bit linear"},
-                {"", "-6", "-4"}
-        };
-        private static final String[][] interpolationQualityChoice = {{
-                "0 - High-speed, low-quality bilinear",
-                "1 - Variable Number of Gradients (VNG)",
-                "2 - Patterned Pixel Grouping (PPG)",
-                "3 - Adaptive Homogeneity-Directed (AHD)"},
-                {"0", "1", "2", "3"}
-        };
-        public int whiteBalance = 1;
+        public WhiteBalanceOption whiteBalance = WhiteBalanceOption.CAMERA;
         public boolean doNotAutomaticallyBrightenTheImage;
-        public int outputColorSpace = 0;
+        public OutputColorSpaceOption outputColorSpace = OutputColorSpaceOption.RAW;
         public boolean documentMode;
         public boolean documentModeWithoutScaling;
-        public int format = 0;
-        public int interpolationQuality = 0;
+        public FormatOption format = FormatOption.F_8_BIT;
+        public InterpolationQualityOption interpolationQuality = InterpolationQualityOption.HIGH_SPEED;
         public boolean halfSize;
         public boolean doNotRotate;
         public boolean showMetadata;

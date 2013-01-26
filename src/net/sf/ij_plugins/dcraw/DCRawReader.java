@@ -19,6 +19,7 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
+
 package net.sf.ij_plugins.dcraw;
 
 import ij.IJ;
@@ -40,36 +41,11 @@ public final class DCRawReader {
 
     public static final String SYSTEM_PROPERTY_DCRAW_BIN = "dcrawExecutable.path";
     private final Vector<LogListener> listeners = new Vector<LogListener>();
-
     private String dcrawBinPath;
 
-
-    enum WhiteBalanceOption {
-        NONE("None", ""),
-        CAMERA("Camera white balance", "-w"),
-        AVERAGING("Averaging the entire image", "-a");
-
-        private final String name;
-        private final String option;
-
-
-        WhiteBalanceOption(final String name, final String option) {
-            this.name = name;
-            this.option = option;
-        }
-
-
-        public String getOption() {
-            return option;
-        }
-
-
-        @Override
-        public String toString() {
-            return name;
-        }
+    private static String dcrawExecutableName() {
+        return IJ.isWindows() ? "dcraw/dcraw.exe" : "dcraw/dcraw";
     }
-
 
     public void addLogListener(final LogListener listener) {
         if (listener != null) {
@@ -77,25 +53,21 @@ public final class DCRawReader {
         }
     }
 
-
     public void removeLogListener(final LogListener listener) {
         if (listener != null) {
             listeners.remove(listener);
         }
     }
 
-
     public void removeAllLogListeners() {
         listeners.clear();
     }
-
 
     public void validateDCRaw() throws DCRawException {
         if (dcrawBinPath == null) {
             dcrawBinPath = locateDCRAW();
         }
     }
-
 
     /**
      * Attempt to locate DCRAW executable. Search locations locations:
@@ -152,12 +124,6 @@ public final class DCRawReader {
 
         return dcrawBinPath;
     }
-
-
-    private static String dcrawExecutableName() {
-        return IJ.isWindows() ? "dcraw/dcraw.exe" : "dcraw/dcraw";
-    }
-
 
     public String executeCommand(final String[] command) throws DCRawException {
         validateDCRaw();
@@ -219,13 +185,142 @@ public final class DCRawReader {
         return outputStreamGrabber.getData();
     }
 
-
     private void log(final String message) {
         for (LogListener listener : listeners) {
             listener.log(message);
         }
     }
 
+
+    public enum WhiteBalanceOption {
+        NONE("None", ""),
+        CAMERA("Camera white balance", "-w"),
+        AVERAGING("Averaging the entire image", "-a");
+        private final String name;
+        private final String option;
+
+
+        WhiteBalanceOption(final String name, final String option) {
+            this.name = name;
+            this.option = option;
+        }
+
+        public static WhiteBalanceOption byName(final String name) {
+            for (WhiteBalanceOption v : values()) {
+                if (v.toString().equals(name)) return v;
+            }
+            throw new IllegalArgumentException("WhiteBalanceOption has no value with name '" + name + "'.");
+        }
+
+        public String getOption() {
+            return option;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    public enum OutputColorSpaceOption {
+        RAW("raw", "0"),
+        SRGB("sRGB", "1"),
+        ADOBE("Adobe", "2"),
+        WIDE("Wide", "3"),
+        PRO_PHOTO("ProPhoto", "4"),
+        XYZ("XYZ", "-o 5");
+        private final String name;
+        private final String option;
+
+
+        OutputColorSpaceOption(final String name, final String option) {
+            this.name = name;
+            this.option = option;
+        }
+
+        public static OutputColorSpaceOption byName(final String name) {
+            for (OutputColorSpaceOption v : values()) {
+                if (v.toString().equals(name)) return v;
+            }
+            throw new IllegalArgumentException("OutputColorSpaceOption has no value with name '" + name + "'.");
+        }
+
+        public String getOption() {
+            return option;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    public enum FormatOption {
+        F_8_BIT("8-bit", ""),
+        F_16_BIT("16-bit", "-6"),
+        F_16_BIT_LINEAR("16-bit linear", "-4");
+        private final String name;
+        private final String option;
+
+
+        FormatOption(final String name, final String option) {
+            this.name = name;
+            this.option = option;
+        }
+
+        public static FormatOption byName(final String name) {
+            for (FormatOption v : values()) {
+                if (v.toString().equals(name)) return v;
+            }
+            throw new IllegalArgumentException("FormatOption has no value with name '" + name + "'.");
+        }
+
+        public String getOption() {
+            return option;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    public enum InterpolationQualityOption {
+        HIGH_SPEED("High-speed, low-quality bilinear", "0"),
+        VNG("Variable Number of Gradients (VNG)", "1"),
+        PPG("Patterned Pixel Grouping (PPG)", "2"),
+        AHD("Adaptive Homogeneity-Directed (AHD)", "3");
+        private final String name;
+        private final String option;
+
+
+        InterpolationQualityOption(final String name, final String option) {
+            this.name = name;
+            this.option = option;
+        }
+
+        public static InterpolationQualityOption byName(final String name) {
+            for (InterpolationQualityOption v : values()) {
+                if (v.toString().equals(name)) return v;
+            }
+            throw new IllegalArgumentException("InterpolationQualityOption has no value with name '" + name + "'.");
+        }
+
+        public String getOption() {
+            return option;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+
+    public static interface LogListener {
+
+        void log(String message);
+    }
 
     /**
      * Utility class for grabbing process outputs.
@@ -241,7 +336,6 @@ public final class DCRawReader {
             this.inputStream = inputStream;
             this.statusPrefix = statusPrefix;
         }
-
 
         @Override
         public void run() {
@@ -260,16 +354,9 @@ public final class DCRawReader {
             }
         }
 
-
         public String getData() {
             return data.toString();
         }
-    }
-
-
-    public static interface LogListener {
-
-        void log(String message);
     }
 
 }
