@@ -23,6 +23,7 @@
 package net.sf.ij_plugins.dcraw;
 
 import ij.IJ;
+import ij.ImagePlus;
 import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
@@ -328,7 +329,15 @@ public class DCRawPlugin implements PlugIn {
                 return;
             }
             IJ.showStatus("Opening: " + processedFile.getAbsolutePath());
-            IJ.open(processedFile.getAbsolutePath());
+            final ImagePlus imp = IJ.openImage(processedFile.getAbsolutePath());
+            if (imp == null) {
+                IJ.error(TITLE, "Failed to open converted image file: " + processedFile.getAbsolutePath());
+            } else {
+                // Set image name, default name may contain temporary file name used during conversion
+                imp.setTitle(rawFile.getName());
+                imp.show();
+            }
+
 
             // Use DCRaw to extract metadata
             if (showMatadata) {
