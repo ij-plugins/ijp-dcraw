@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2011 Jarek Sacha
+ * Copyright (C) 2002-2013 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -170,7 +170,7 @@ public final class DCRawReader {
         log("Executing command array: " + Arrays.toString(fullCommand));
 
         {
-            final StringBuffer commandOptions = new StringBuffer();
+            final StringBuilder commandOptions = new StringBuilder();
             for (int i = 1; i < command.length; i++) {
                 commandOptions.append(command[i]).append(" ");
             }
@@ -243,6 +243,7 @@ public final class DCRawReader {
         }
 
 
+        @Override
         public void run() {
             try {
                 final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));

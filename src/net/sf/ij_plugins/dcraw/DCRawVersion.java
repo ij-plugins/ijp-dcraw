@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2011 Jarek Sacha
+ * Copyright (C) 2002-2013 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -32,7 +32,7 @@ package net.sf.ij_plugins.dcraw;
 public class DCRawVersion {
 
     private static final DCRawVersion OUR_INSTANCE = new DCRawVersion();
-    private static final String VERSION = "1.3.0";
+    private static final String VERSION = "1.4.0";
 
 
     public static DCRawVersion getInstance() {
@@ -44,6 +44,7 @@ public class DCRawVersion {
     }
 
 
+    @Override
     public String toString() {
         return VERSION;
     }

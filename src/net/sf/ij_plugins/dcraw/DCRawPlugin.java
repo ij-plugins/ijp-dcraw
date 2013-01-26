@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2011 Jarek Sacha
+ * Copyright (C) 2002-2013 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -47,7 +47,7 @@ public class DCRawPlugin implements PlugIn {
 
     private static final String TITLE = "DCRaw Reader";
     private static final String ABOUT = "" +
-            "The Digital Camera Raw Reader plugin opens over 200 raw image formats using\n" +
+            "The Digital Camera Raw Reader plugin opens raw image formats from over 500 cameras using\n" +
             "DCRAW program created by Dave Coffin. Full list of supported cameras can be\n" +
             "found at DCRAW home page: http://www.cybercom.net/~dcoffin/dcraw/\n" +
             "---\n" +
@@ -62,10 +62,49 @@ public class DCRawPlugin implements PlugIn {
             "ImageJ home directory. Example line that should be added to IJ_Props.txt:\n" +
             Prefs.KEY_PREFIX + DCRawReader.SYSTEM_PROPERTY_DCRAW_BIN + "=/apps/bin/dcraw.exe\n" +
             "Reading of 48 bit RGB images requires ImageJ v.1.35p or newer.";
+    //    private static boolean useTmpDir = true;
+    private static final Config CONFIG = new Config();
 
-    private static boolean useTmpDir = true;
+    private static void log(final String message) {
+        if (IJ.debugMode) {
+            IJ.log(message);
+        }
+    }
 
+    private static String toProcessedFileName(final String rawFileName) {
+        final String processedExtension = ".tiff";
+        final int dotIndex = rawFileName.lastIndexOf('.');
+        if (dotIndex < 0) {
+            return rawFileName + processedExtension;
+        } else {
+            return rawFileName.substring(0, dotIndex) + processedExtension;
+        }
+    }
 
+    private static void copyFile(final File sourceFile, final File destFile) throws IOException {
+        if (!destFile.exists()) {
+            if (!destFile.createNewFile()) {
+                throw new IOException("Destination file cannot be created: " + destFile.getPath());
+            }
+        }
+
+        FileChannel source = null;
+        FileChannel destination = null;
+        try {
+            source = new FileInputStream(sourceFile).getChannel();
+            destination = new FileOutputStream(destFile).getChannel();
+            destination.transferFrom(source, 0, source.size());
+        } finally {
+            if (source != null) {
+                source.close();
+            }
+            if (destination != null) {
+                destination.close();
+            }
+        }
+    }
+
+    @Override
     public void run(final String arg) {
 
         final String title = TITLE + " (v." + DCRawVersion.getInstance() + ")";
@@ -77,6 +116,7 @@ public class DCRawPlugin implements PlugIn {
 
         final DCRawReader dcRawReader = new DCRawReader();
         dcRawReader.addLogListener(new DCRawReader.LogListener() {
+            @Override
             public void log(String message) {
                 DCRawPlugin.log(message);
             }
@@ -111,57 +151,33 @@ public class DCRawPlugin implements PlugIn {
             //
             final GenericDialog dialog = new GenericDialog(title);
 
-            dialog.addCheckbox("Use_temporary_directory for processing", useTmpDir);
+            dialog.addCheckbox("Use_temporary_directory for processing", CONFIG.useTmpDir);
 
             // Auto white balance
-            final String[][] whiteBalanceChoice = {
-                    {"None", "Camera white balance", "Averaging the entire image"},
-                    {"", "-w", "-a"}
-            };
-            dialog.addChoice("White balance", whiteBalanceChoice[0], whiteBalanceChoice[0][1]);
+            dialog.addChoice("White_balance", Config.whiteBalanceChoice[0], Config.whiteBalanceChoice[0][CONFIG.whiteBalance]);
 
-            dialog.addCheckbox("Don't automatically brighten the image", false);
+            dialog.addCheckbox("Do_not_automatically_brighten the image", CONFIG.doNotAutomaticallyBrightenTheImage);
 
             // -o [0-5]  Output colorspace (raw,sRGB,Adobe,Wide,ProPhoto,XYZ)
-            final String[][] outputColorSpace = {{
-                    "0 - raw",
-                    "1 - sRGB",
-                    "2 - Adobe",
-                    "3 - Wide",
-                    "4 - ProPhoto",
-                    "5 - XYZ"},
-                    {"0", "1", "2", "3", "4", "5"}
-            };
-            dialog.addChoice("Output_colorspace", outputColorSpace[0], outputColorSpace[0][0]);
+            dialog.addChoice("Output_colorspace", Config.outputColorSpaceChoice[0], Config.outputColorSpaceChoice[0][CONFIG.outputColorSpace]);
 
             // -d        Document mode (no color, no interpolation)
-            dialog.addCheckbox("Document_mode (no color, no interpolation)", false);
+            dialog.addCheckbox("Document_mode (no color, no interpolation)", CONFIG.documentMode);
 
             // -D        Document mode without scaling (totally raw)
-            dialog.addCheckbox("Document_mode_without_scaling (totally raw)", false);
+            dialog.addCheckbox("Document_mode_without_scaling (totally raw)", CONFIG.documentModeWithoutScaling);
 
             // Image bit format
-            final String[][] formatChoice = {
-                    {"8-bit", "16-bit", "16-bit linear"},
-                    {"", "-6", "-4"}
-            };
-            dialog.addChoice("Read as", formatChoice[0], formatChoice[0][0]);
+            dialog.addChoice("Read_as", Config.formatChoice[0], Config.formatChoice[0][CONFIG.format]);
 
             // Interpolation quality
-            final String[][] interpolationQualityChoice = {{
-                    "0 - High-speed, low-quality bilinear",
-                    "1 - Variable Number of Gradients (VNG)",
-                    "2 - Patterned Pixel Grouping (PPG)",
-                    "3 - Adaptive Homogeneity-Directed (AHD)"},
-                    {"0", "1", "2", "3"}
-            };
-            dialog.addChoice("Interpolation quality", interpolationQualityChoice[0], interpolationQualityChoice[0][0]);
+            dialog.addChoice("Interpolation quality", Config.interpolationQualityChoice[0], Config.interpolationQualityChoice[0][CONFIG.interpolationQuality]);
 
-            dialog.addCheckbox("Half size", false);
+            dialog.addCheckbox("Half_size", CONFIG.halfSize);
 
-            dialog.addCheckbox("Do not rotate or scale pixels (preserve orientation and aspect ratio)", false);
+            dialog.addCheckbox("Do_not_rotate or scale pixels (preserve orientation and aspect ratio)", CONFIG.doNotRotate);
 
-            dialog.addCheckbox("Show metadata in Result window", false);
+            dialog.addCheckbox("Show_metadata in Result window", CONFIG.showMetadata);
 
             dialog.addHelp("http://ij-plugins.sourceforge.net/plugins/dcraw/");
 
@@ -175,8 +191,19 @@ public class DCRawPlugin implements PlugIn {
                 return;
             }
 
-            useTmpDir = dialog.getNextBoolean();
-            if (useTmpDir) {
+            CONFIG.useTmpDir = dialog.getNextBoolean();
+            CONFIG.whiteBalance = dialog.getNextChoiceIndex();
+            CONFIG.doNotAutomaticallyBrightenTheImage = dialog.getNextBoolean();
+            CONFIG.outputColorSpace = dialog.getNextChoiceIndex();
+            CONFIG.documentMode = dialog.getNextBoolean();
+            CONFIG.documentModeWithoutScaling = dialog.getNextBoolean();
+            CONFIG.format = dialog.getNextChoiceIndex();
+            CONFIG.interpolationQuality = dialog.getNextChoiceIndex();
+            CONFIG.halfSize = dialog.getNextBoolean();
+            CONFIG.doNotRotate = dialog.getNextBoolean();
+            CONFIG.showMetadata = dialog.getNextBoolean();
+
+            if (CONFIG.useTmpDir) {
                 // Copy file to a temp file to avoid overwriting data ast the source
                 // DCRAW always writes output in the same directory as the input file.
                 try {
@@ -223,45 +250,45 @@ public class DCRawPlugin implements PlugIn {
             commandList.add("-T");
 
             // White balance
-            commandList.add(whiteBalanceChoice[1][dialog.getNextChoiceIndex()]);
+            commandList.add(Config.whiteBalanceChoice[1][CONFIG.whiteBalance]);
 
             // Brightness adjustment
-            if (dialog.getNextBoolean()) {
+            if (CONFIG.doNotAutomaticallyBrightenTheImage) {
                 commandList.add("-W");
             }
 
             // Colorspace
             commandList.add("-o");
-            commandList.add(outputColorSpace[1][dialog.getNextChoiceIndex()]);
+            commandList.add(Config.outputColorSpaceChoice[1][CONFIG.outputColorSpace]);
 
             // -d Document mode (no color, no interpolation)
-            if (dialog.getNextBoolean()) {
+            if (CONFIG.documentMode) {
                 commandList.add("-d");
             }
 
             // -D Document mode without scaling (totally raw)
-            if (dialog.getNextBoolean()) {
+            if (CONFIG.documentModeWithoutScaling) {
                 commandList.add("-D");
             }
 
             // Image bit format
-            commandList.add(formatChoice[1][dialog.getNextChoiceIndex()]);
+            commandList.add(Config.formatChoice[1][CONFIG.format]);
 
             // Interpolation quality
             commandList.add("-q");
-            commandList.add(interpolationQualityChoice[1][dialog.getNextChoiceIndex()]);
+            commandList.add(Config.interpolationQualityChoice[1][CONFIG.interpolationQuality]);
 
             // Extract at half size
-            if (dialog.getNextBoolean()) {
+            if (CONFIG.halfSize) {
                 commandList.add("-h");
             }
 
             // Do not rotate or correct pixel aspect ratio
-            if (dialog.getNextBoolean()) {
+            if (CONFIG.doNotRotate) {
                 commandList.add("-j");
             }
 
-            final boolean showMatadata = dialog.getNextBoolean();
+            final boolean showMatadata = CONFIG.showMetadata;
 
             // Add input raw file
             commandList.add(actualInput.getAbsolutePath());
@@ -307,13 +334,13 @@ public class DCRawPlugin implements PlugIn {
             //
             dcRawReader.removeAllLogListeners();
             // Remove processed file if needed
-            if ((useTmpDir || removeProcessed) && processedFile != null && processedFile.exists()) {
+            if ((CONFIG.useTmpDir || removeProcessed) && processedFile != null && processedFile.exists()) {
                 if (!processedFile.delete()) {
                     IJ.error(title, "Failed to delete the processed file: " + processedFile.getAbsolutePath());
                 }
             }
             // Remove temporary copy of the raw file
-            if (useTmpDir && actualInput != null && actualInput.exists()) {
+            if (CONFIG.useTmpDir && actualInput != null && actualInput.exists()) {
                 if (!actualInput.delete()) {
                     IJ.error(title, "Failed to delete temporary copy of the raw file: " + actualInput.getAbsolutePath());
                 }
@@ -321,45 +348,41 @@ public class DCRawPlugin implements PlugIn {
         }
     }
 
-
-    private static void log(final String message) {
-        if (IJ.debugMode) {
-            IJ.log(message);
-        }
-    }
-
-
-    private static String toProcessedFileName(final String rawFileName) {
-        final String processedExtension = ".tiff";
-        final int dotIndex = rawFileName.lastIndexOf('.');
-        if (dotIndex < 0) {
-            return rawFileName + processedExtension;
-        } else {
-            return rawFileName.substring(0, dotIndex) + processedExtension;
-        }
-    }
-
-
-    private static void copyFile(final File sourceFile, final File destFile) throws IOException {
-        if (!destFile.exists()) {
-            if (!destFile.createNewFile()) {
-                throw new IOException("Destination file cannot be created: " + destFile.getPath());
-            }
-        }
-
-        FileChannel source = null;
-        FileChannel destination = null;
-        try {
-            source = new FileInputStream(sourceFile).getChannel();
-            destination = new FileOutputStream(destFile).getChannel();
-            destination.transferFrom(source, 0, source.size());
-        } finally {
-            if (source != null) {
-                source.close();
-            }
-            if (destination != null) {
-                destination.close();
-            }
-        }
+    private static class Config {
+        private static final String[][] whiteBalanceChoice = {
+                {"None", "Camera white balance", "Averaging the entire image"},
+                {"", "-w", "-a"}
+        };
+        private static final String[][] outputColorSpaceChoice = {{
+                "0 - raw",
+                "1 - sRGB",
+                "2 - Adobe",
+                "3 - Wide",
+                "4 - ProPhoto",
+                "5 - XYZ"},
+                {"0", "1", "2", "3", "4", "5"}
+        };
+        private static final String[][] formatChoice = {
+                {"8-bit", "16-bit", "16-bit linear"},
+                {"", "-6", "-4"}
+        };
+        private static final String[][] interpolationQualityChoice = {{
+                "0 - High-speed, low-quality bilinear",
+                "1 - Variable Number of Gradients (VNG)",
+                "2 - Patterned Pixel Grouping (PPG)",
+                "3 - Adaptive Homogeneity-Directed (AHD)"},
+                {"0", "1", "2", "3"}
+        };
+        public int whiteBalance = 1;
+        public boolean doNotAutomaticallyBrightenTheImage;
+        public int outputColorSpace = 0;
+        public boolean documentMode;
+        public boolean documentModeWithoutScaling;
+        public int format = 0;
+        public int interpolationQuality = 0;
+        public boolean halfSize;
+        public boolean doNotRotate;
+        public boolean showMetadata;
+        boolean useTmpDir = true;
     }
 }
