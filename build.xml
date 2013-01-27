@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ Image/J Plugins
-  ~ Copyright (C) 2002-2011 Jarek Sacha
+  ~ Copyright (C) 2002-2013 Jarek Sacha
   ~ Author's email: jsacha at users dot sourceforge dot net
   ~
   ~ This library is free software; you can redistribute it and/or
@@ -226,8 +226,7 @@
     </target>
 
     <target name="src-dist-from-svn" depends="init" description="Package current SVN sources">
-
-        <property name="svn.repository" value="https://ij-plugins.svn.sourceforge.net/svnroot/ij-plugins"/>
+        <property name="svn.repository" value="https://svn.code.sf.net/p/ij-plugins/code"/>
         <property name="svn.module" value="ij-dcraw"/>
         <property name="checkout.dir" location="${build.dir}/checkout"/>
         <property name="svn.dir" location="${checkout.dir}/${svn.module}"/>
