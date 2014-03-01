@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2013 Jarek Sacha
+ * Copyright (C) 2002-2014 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -35,14 +35,12 @@ public class DCRawVersion {
     private static final String VERSION = "1.4.0";
 
 
-    public static DCRawVersion getInstance() {
-        return OUR_INSTANCE;
-    }
-
-
     private DCRawVersion() {
     }
 
+    public static DCRawVersion getInstance() {
+        return OUR_INSTANCE;
+    }
 
     @Override
     public String toString() {
