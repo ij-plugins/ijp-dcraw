@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2011 Jarek Sacha
+ * Copyright (C) 2002-2014 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -56,8 +56,14 @@ public final class DCRawReaderTest {
     public void testExecuteCommand() throws DCRawException {
 
         // Input file
-        final File inFile = new File("test/data/IMG_5604.CR2");
-        assertTrue(inFile.exists());
+        final File inFile = new File("test/data/IMG 56 04.CR2");
+        assertTrue("File exists: " + inFile.getAbsolutePath(), inFile.exists());
+
+        final File outputFile = new File("test/data/IMG 56 04.tiff");
+        if (outputFile.exists())
+            if (!outputFile.delete())
+                fail("Unable to delete output file: " + outputFile.getAbsolutePath());
+        assertFalse("Output file should not exists: " + outputFile.getAbsolutePath(), outputFile.exists());
 
         // dcraw wrapper
         final DCRawReader dcRawReader = new DCRawReader();
@@ -77,13 +83,14 @@ public final class DCRawReaderTest {
                 "-T", // Write TIFF instead of PPM
                 "-j", // Don't stretch or rotate raw pixels
                 "-W", // Don't automatically brighten the image
-                inFile.getAbsolutePath()});
+                '"' + inFile.getAbsolutePath() + '"'});
 
         // Cleanup
         dcRawReader.removeAllLogListeners();
 
         // Load converted file, it is the same location as original raw file but with extension '.tiff'
-        final ImagePlus imp = IJ.openImage("test/data/IMG_5604.tiff");
-        assertNotNull(imp);
+        assertTrue("Output file should exists: " + outputFile.getAbsolutePath(), outputFile.exists());
+        final ImagePlus imp = IJ.openImage(outputFile.getAbsolutePath());
+        assertNotNull("Cannot load TIFF image file: " + outputFile.getAbsolutePath(), imp != null);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2013 Jarek Sacha
+ * Copyright (C) 2002-2014 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -86,7 +86,7 @@ public final class DCRawReader {
         if (systemDCRawExecutablePath != null) {
             // Try to read from a system property
             final File file = new File(systemDCRawExecutablePath);
-            if (!file.exists()) {
+            if (!file.exists() || file.isDirectory()) {
                 throw new DCRawException("System property '" + SYSTEM_PROPERTY_DCRAW_BIN
                         + "' does not point to an existing DCRAW executable ["
                         + file.getAbsolutePath() + "]");
@@ -122,7 +122,7 @@ public final class DCRawReader {
             }
         }
 
-        return dcrawBinPath;
+        return '"' + dcrawBinPath + '"';
     }
 
     public String executeCommand(final String[] command) throws DCRawException {

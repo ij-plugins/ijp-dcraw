@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2013 Jarek Sacha
+ * Copyright (C) 2002-2014 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -308,7 +308,7 @@ public class DCRawPlugin implements PlugIn {
             final boolean showMatadata = CONFIG.showMetadata;
 
             // Add input raw file
-            commandList.add(actualInput.getAbsolutePath());
+            commandList.add('"' + actualInput.getAbsolutePath() + '"');
 
             //
             // Run DCRAW
@@ -341,7 +341,7 @@ public class DCRawPlugin implements PlugIn {
 
             // Use DCRaw to extract metadata
             if (showMatadata) {
-                final String[] metadataCommand = new String[]{"-i", "-v", rawFile.getAbsolutePath()};
+                final String[] metadataCommand = new String[]{"-i", "-v", '"' + rawFile.getAbsolutePath() + '"'};
                 final String metadataOutput;
                 try {
                     metadataOutput = dcRawReader.executeCommand(metadataCommand);
