@@ -32,7 +32,7 @@ package net.sf.ij_plugins.dcraw;
 public class DCRawVersion {
 
     private static final DCRawVersion OUR_INSTANCE = new DCRawVersion();
-    private static final String VERSION = "1.4.0";
+    private static final String VERSION = "1.5.0";
 
 
     private DCRawVersion() {
