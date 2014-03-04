@@ -122,7 +122,7 @@ public final class DCRawReader {
             }
         }
 
-        return '"' + dcrawBinPath + '"';
+        return dcrawBinPath;
     }
 
     public String executeCommand(final String[] command) throws DCRawException {
@@ -135,20 +135,10 @@ public final class DCRawReader {
         final Process process;
         log("Executing command array: " + Arrays.toString(fullCommand));
 
-        // There are errors when command line is passed as an array, some options, like "-q 0", are misinterpreted,
-        // so create a single string.
-        final StringBuilder fullCommandStr = new StringBuilder();
-        for (String s : fullCommand) {
-            if (s != null && !s.trim().isEmpty()) {
-                fullCommandStr.append(s).append(" ");
-            }
-        }
-        log("DCRAW command line: " + fullCommandStr.toString());
-
         // Disable CygWin warning about DOS path names (if running CygWin compiled dcraw)
         final String envp[] = {"CYGWIN=nodosfilewarning"};
         try {
-            process = Runtime.getRuntime().exec(fullCommandStr.toString(), envp);
+            process = Runtime.getRuntime().exec(fullCommand, envp);
         } catch (final IOException e) {
             throw new DCRawException("IO Error executing system command: '" + command[0] + "'.", e);
         }

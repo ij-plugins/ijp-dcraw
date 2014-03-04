@@ -78,12 +78,13 @@ public final class DCRawReaderTest {
 
         // Execute dcraw
         dcRawReader.executeCommand(new String[]{
-                "-v", // Print verbose messages
-                "-w", // Use camera white balance, if possible
-                "-T", // Write TIFF instead of PPM
-                "-j", // Don't stretch or rotate raw pixels
-                "-W", // Don't automatically brighten the image
-                '"' + inFile.getAbsolutePath() + '"'});
+                "-v",      // Print verbose messages
+                "-q", "0", // Use high-speed, low-quality bilinear interpolation.
+                "-w",      // Use camera white balance, if possible
+                "-T",      // Write TIFF instead of PPM
+                "-j",      // Don't stretch or rotate raw pixels
+                "-W",      // Don't automatically brighten the image
+                inFile.getAbsolutePath()});
 
         // Cleanup
         dcRawReader.removeAllLogListeners();

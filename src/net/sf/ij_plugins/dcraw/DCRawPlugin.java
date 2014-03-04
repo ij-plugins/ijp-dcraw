@@ -267,7 +267,9 @@ public class DCRawPlugin implements PlugIn {
             commandList.add("-T");
 
             // White balance
-            commandList.add(CONFIG.whiteBalance.getOption());
+            if(!CONFIG.whiteBalance.getOption().trim().isEmpty()) {
+                commandList.add(CONFIG.whiteBalance.getOption());
+            }
 
             // Brightness adjustment
             if (CONFIG.doNotAutomaticallyBrightenTheImage) {
@@ -289,7 +291,9 @@ public class DCRawPlugin implements PlugIn {
             }
 
             // Image bit format
-            commandList.add(CONFIG.format.getOption());
+            if(!CONFIG.format.getOption().trim().isEmpty()) {
+                commandList.add(CONFIG.format.getOption());
+            }
 
             // Interpolation quality
             commandList.add("-q");
@@ -308,7 +312,7 @@ public class DCRawPlugin implements PlugIn {
             final boolean showMatadata = CONFIG.showMetadata;
 
             // Add input raw file
-            commandList.add('"' + actualInput.getAbsolutePath() + '"');
+            commandList.add(actualInput.getAbsolutePath());
 
             //
             // Run DCRAW
