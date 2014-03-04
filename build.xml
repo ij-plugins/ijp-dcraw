@@ -137,10 +137,8 @@
             <arg value="-o"/>
             <arg file="${dcraw.build.dir}/dcraw"/>
             <arg file="${dcraw.src.dir}/dcraw.c"/>
-            <arg value="-ljasper"/>
-            <arg value="-ljpeg"/>
-            <arg value="-llcms"/>
             <arg value="-lm"/>
+            <arg value="-DNODEPS"/>
         </exec>
     </target>
 
