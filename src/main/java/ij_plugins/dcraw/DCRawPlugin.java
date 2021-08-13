@@ -24,7 +24,6 @@ package ij_plugins.dcraw;
 
 import ij.IJ;
 import ij.ImagePlus;
-import ij.Prefs;
 import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
@@ -55,22 +54,14 @@ public class DCRawPlugin implements PlugIn {
     private static final String HTML_DESCRIPTION = "Open image file in a camera raw format using the \"dcraw\" tool.";
 
 
-    private static final String ABOUT = "" +
-            "The Digital Camera Raw Reader plugin opens raw image formats from over 500 cameras using\n" +
-            "DCRAW program created by Dave Coffin. Full list of supported cameras can be\n" +
-            "found at DCRAW home page: http://www.cybercom.net/~dcoffin/dcraw/\n" +
-            "---\n" +
-            "The DCRaw Reader plugin requires the DCRAW binary. Versions for various operating\n" +
-            "systems can be downloaded through the Reader home page:\n" +
-            "http://ij-plugins.sourceforge.net/plugins/dcraw/ or through DCRAW home page.\n" +
-            "---\n" +
-            "By default, the DCRaw Reader plugin looks for the DCRAW binary in subdirectory\n" +
-            "'dcraw' of ImageJ plugins folder. Alternative location can be specified by adding\n" +
-            "property '" + Prefs.KEY_PREFIX + DCRawReader.SYSTEM_PROPERTY_DCRAW_BIN
-            + "' to ImageJ properties file IJ_Props.txt located in\n" +
-            "ImageJ home directory. Example line that should be added to IJ_Props.txt:\n" +
-            Prefs.KEY_PREFIX + DCRawReader.SYSTEM_PROPERTY_DCRAW_BIN + "=/apps/bin/dcraw.exe\n" +
-            "Reading of 48 bit RGB images requires ImageJ v.1.35p or newer.";
+    private static final String ABOUT = "<html>" +
+            "<p>" +
+            "\"DCRaw Reader\" plugin open image file in a camera raw format using the \"dcraw\" tool created by Dave Coffin." +
+            "</p>" +
+            "<p>" +
+            "For more information about \"DCRaw Reader\" see project page at  <a href=\"" + HELP_URL + "\">" + HELP_URL + "</a> " +
+            "</p>" +
+            "</html>";
     //    private static boolean useTmpDir = true;
     private static final Config CONFIG = new Config();
 
