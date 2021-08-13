@@ -152,6 +152,7 @@ public class DCRawPlugin implements PlugIn {
             // Setup options dialog
             //
             final GenericDialog dialog = new GenericDialog(title);
+            dialog.setIconImage(IJPUtils.imageJIconAsAWTImage());
 
             dialog.addPanel(IJPUtils.createInfoPanel(TITLE, HTML_DESCRIPTION));
 

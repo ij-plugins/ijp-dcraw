@@ -23,6 +23,7 @@
 package ij_plugins.dcraw;
 
 import ij.IJ;
+import ij.ImageJ;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -46,6 +47,17 @@ import java.util.Objects;
 public final class IJPUtils {
 
     private IJPUtils() {
+    }
+
+
+    /**
+     * Returns icon used by ImageJ main frame. Returns `null` if main frame is not instantiated or has no icon.
+     *
+     * @return ImageJ icon or `null`.
+     */
+    public static java.awt.Image imageJIconAsAWTImage() {
+        final ImageJ imageJ = IJ.getInstance();
+        return (imageJ != null) ? imageJ.getIconImage() : null;
     }
 
     /**
