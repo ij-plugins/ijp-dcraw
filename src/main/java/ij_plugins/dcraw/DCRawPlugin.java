@@ -49,7 +49,12 @@ import static ij_plugins.dcraw.DCRawReader.*;
  */
 public class DCRawPlugin implements PlugIn {
 
-    private static final String TITLE = "DCRaw Reader";
+    public static final String TITLE = "DCRaw Reader";
+    public static final String HELP_URL = "https://github.com/ij-plugins/ijp-dcraw";
+
+    private static final String HTML_DESCRIPTION = "Open image file in a camera raw format using the \"dcraw\" tool.";
+
+
     private static final String ABOUT = "" +
             "The Digital Camera Raw Reader plugin opens raw image formats from over 500 cameras using\n" +
             "DCRAW program created by Dave Coffin. Full list of supported cameras can be\n" +
@@ -148,6 +153,8 @@ public class DCRawPlugin implements PlugIn {
             //
             final GenericDialog dialog = new GenericDialog(title);
 
+            dialog.addPanel(IJPUtils.createInfoPanel(TITLE, HTML_DESCRIPTION));
+
             dialog.addCheckbox("Use_temporary_directory for processing", CONFIG.useTmpDir);
 
             // Auto white balance
@@ -181,7 +188,7 @@ public class DCRawPlugin implements PlugIn {
 
             dialog.addCheckbox("Show_metadata in Result window", CONFIG.showMetadata);
 
-            dialog.addHelp("http://ij-plugins.sourceforge.net/plugins/dcraw/");
+            dialog.addHelp(HELP_URL);
 
             //
             // Show dialog
