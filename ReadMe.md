@@ -2,7 +2,7 @@ ijp-dcraw
 =========
 
 `ijp-dcraw` provides ImageJ plugin "DCRaw Reader" to open raw images from digital cameras. Originally the backend was
-provided by [dcraw] tool. NNew versions will use [LibRaw]/`dcraw_emu` tool. The hundreds of supported cameras ate listed
+provided by [dcraw] tool. New versions will use [LibRaw]/`dcraw_emu` tool. The hundreds of supported cameras ate listed
 on [LibRaw Supported Cameras] page.
 
 ![Image Calibrator](assets/DCRaw_Reader_Dialog.png)
