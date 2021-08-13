@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
 public final class DCRawReaderTest {
 
     @Test
-    public void testValidateDCRaw() throws Exception {
+    public void testValidateDCRaw() {
         final DCRawReader dcRawReader = new DCRawReader();
         try {
             dcRawReader.validateDCRaw();
@@ -69,12 +69,7 @@ public final class DCRawReaderTest {
         final DCRawReader dcRawReader = new DCRawReader();
 
         // Listen to output messages
-        dcRawReader.addLogListener(new DCRawReader.LogListener() {
-            @Override
-            public void log(String message) {
-                System.out.println("message = " + message);
-            }
-        });
+        dcRawReader.addLogListener(message -> System.out.println("message = " + message));
 
         // Execute dcraw
         dcRawReader.executeCommand(new String[]{
@@ -92,6 +87,6 @@ public final class DCRawReaderTest {
         // Load converted file, it is the same location as original raw file but with extension '.tiff'
         assertTrue("Output file should exists: " + outputFile.getAbsolutePath(), outputFile.exists());
         final ImagePlus imp = IJ.openImage(outputFile.getAbsolutePath());
-        assertNotNull("Cannot load TIFF image file: " + outputFile.getAbsolutePath(), imp != null);
+        assertNotNull("Cannot load TIFF image file: " + outputFile.getAbsolutePath(), imp);
     }
 }

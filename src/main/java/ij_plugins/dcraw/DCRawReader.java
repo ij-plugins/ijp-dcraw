@@ -40,7 +40,7 @@ import java.util.Vector;
 public final class DCRawReader {
 
     public static final String SYSTEM_PROPERTY_DCRAW_BIN = "dcrawExecutable.path";
-    private final Vector<LogListener> listeners = new Vector<LogListener>();
+    private final Vector<LogListener> listeners = new Vector<>();
     private String dcrawBinPath;
 
     private static String dcrawExecutableName() {
@@ -136,7 +136,7 @@ public final class DCRawReader {
         log("Executing command array: " + Arrays.toString(fullCommand));
 
         // Disable CygWin warning about DOS path names (if running CygWin compiled dcraw)
-        final String envp[] = {"CYGWIN=nodosfilewarning"};
+        final String[] envp = {"CYGWIN=nodosfilewarning"};
         try {
             process = Runtime.getRuntime().exec(fullCommand, envp);
         } catch (final IOException e) {
@@ -309,7 +309,7 @@ public final class DCRawReader {
     }
 
 
-    public static interface LogListener {
+    public interface LogListener {
 
         void log(String message);
     }

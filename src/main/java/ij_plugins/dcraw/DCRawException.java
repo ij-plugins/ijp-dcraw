@@ -22,11 +22,13 @@
 package ij_plugins.dcraw;
 
 /**
- * Exception specific to package {@link net.sf.ij_plugins.dcraw}.
+ * Exception specific to package {@link ij_plugins.dcraw}.
  *
  * @author Jarek Sacha
  */
 public final class DCRawException extends Exception {
+
+    private static final long serialVersionUID = 1234567L;
 
     public DCRawException(final String message) {
         super(message);

@@ -31,11 +31,11 @@ public class DCRawVersionTest extends TestCase {
         super(test);
     }
 
-    public void testInstance() throws Exception {
+    public void testInstance() {
         assertNotNull(DCRawVersion.getInstance());
     }
 
-    public void testToString() throws Exception {
+    public void testToString() {
         final DCRawVersion instance = DCRawVersion.getInstance();
         assertNotNull(instance);
 

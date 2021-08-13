@@ -92,19 +92,9 @@ public class DCRawPlugin implements PlugIn {
             }
         }
 
-        FileChannel source = null;
-        FileChannel destination = null;
-        try {
-            source = new FileInputStream(sourceFile).getChannel();
-            destination = new FileOutputStream(destFile).getChannel();
+        try (FileChannel source = new FileInputStream(sourceFile).getChannel();
+             FileChannel destination = new FileOutputStream(destFile).getChannel()) {
             destination.transferFrom(source, 0, source.size());
-        } finally {
-            if (source != null) {
-                source.close();
-            }
-            if (destination != null) {
-                destination.close();
-            }
         }
     }
 
@@ -127,12 +117,7 @@ public class DCRawPlugin implements PlugIn {
         }
 
         final DCRawReader dcRawReader = new DCRawReader();
-        dcRawReader.addLogListener(new DCRawReader.LogListener() {
-            @Override
-            public void log(String message) {
-                DCRawPlugin.log(message);
-            }
-        });
+        dcRawReader.addLogListener(DCRawPlugin::log);
         File processedFile = null;
         boolean removeProcessed = false;
         File actualInput = null;
@@ -258,7 +243,7 @@ public class DCRawPlugin implements PlugIn {
             //
 
             // Command line components
-            final List<String> commandList = new ArrayList<String>();
+            final List<String> commandList = new ArrayList<>();
 
             // Turn on verbose messages
             commandList.add("-v");
@@ -317,7 +302,7 @@ public class DCRawPlugin implements PlugIn {
             //
             // Run DCRAW
             //
-            final String[] command = commandList.toArray(new String[commandList.size()]);
+            final String[] command = commandList.toArray(new String[0]);
             try {
                 dcRawReader.executeCommand(command);
             } catch (DCRawException e) {
