@@ -57,8 +57,14 @@ public class DCRawVersionTest extends TestCase {
         final int firstSpace = version.indexOf(' ', secondDotIndex + 1);
         final int updateVersionNumber;
         if (firstSpace < 0) {
-            // Final release version number for instance "1.5.2"
-            updateVersionNumber = Integer.parseInt(version.substring(secondDotIndex + 1));
+            final int thirdDotIndex = version.indexOf('.', secondDotIndex + 1);
+            if (thirdDotIndex > 0) {
+                // Final release version number for instance "1.5.2.0-SNAPSHOT"
+                updateVersionNumber = Integer.parseInt(version.substring(secondDotIndex + 1, thirdDotIndex));
+            } else {
+                // Final release version number for instance "1.5.2"
+                updateVersionNumber = Integer.parseInt(version.substring(secondDotIndex + 1));
+            }
         } else {
             // Interim release version number for instance "1.5.2 dev"
             updateVersionNumber = Integer.parseInt(version.substring(secondDotIndex + 1, firstSpace));

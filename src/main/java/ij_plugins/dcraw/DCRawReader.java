@@ -83,6 +83,7 @@ public final class DCRawReader {
      */
     private String locateDCRAW() throws DCRawException {
         final String systemDCRawExecutablePath = System.getProperty(SYSTEM_PROPERTY_DCRAW_BIN, null);
+        final File devEnvLocation = new File("plugins" + File.separator + dcrawExecutableName());
         if (systemDCRawExecutablePath != null) {
             // Try to read from a system property
             final File file = new File(systemDCRawExecutablePath);
@@ -112,6 +113,9 @@ public final class DCRawReader {
                                 + file.getAbsolutePath() + "'.");
             }
             dcrawBinPath = new File(path).getAbsolutePath();
+        } else if (devEnvLocation.exists()) {
+            // This branch is intended primarily for execution in test environment
+            dcrawBinPath = devEnvLocation.getAbsolutePath();
         } else {
             // Attempt to use system path
             dcrawBinPath = dcrawExecutableName();
