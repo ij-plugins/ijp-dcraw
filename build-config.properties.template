@@ -1,3 +1,0 @@
-#
-# Cygwin installation directory, used to compile dcraw.c on Windows.
-cygwin.home.dir=c:/cygwin        
