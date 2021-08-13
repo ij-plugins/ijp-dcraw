@@ -19,7 +19,7 @@
  *
  * Latest release available at https://github.com/ij-plugins/ijp-toolkit/
  */
-package net.sf.ij_plugins.dcraw;
+package ij_plugins.dcraw;
 
 /**
  * Exception specific to package {@link net.sf.ij_plugins.dcraw}.

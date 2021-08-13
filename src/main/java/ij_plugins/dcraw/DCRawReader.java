@@ -20,7 +20,7 @@
  * Latest release available at https://github.com/ij-plugins/ijp-toolkit/
  */
 
-package net.sf.ij_plugins.dcraw;
+package ij_plugins.dcraw;
 
 import ij.IJ;
 import ij.Menus;

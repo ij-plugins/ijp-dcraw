@@ -20,7 +20,7 @@
  * Latest release available at https://github.com/ij-plugins/ijp-toolkit/
  */
 
-package net.sf.ij_plugins.dcraw;
+package ij_plugins.dcraw;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -37,7 +37,7 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static net.sf.ij_plugins.dcraw.DCRawReader.*;
+import static ij_plugins.dcraw.DCRawReader.*;
 
 
 /**
