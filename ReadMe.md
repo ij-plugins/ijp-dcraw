@@ -1,5 +1,7 @@
-IJ Plugins Toolkit
-==================
+ijp-dcraw
+=========
+
+**NOTE: content below is outdated, it will be fixed with the next release**
 
 [ij-dcraw](http://ij-plugins.sourceforge.net/plugins/dcraw/index.html) plugin open raw images from digital cameras in
 ImageJ with a help of [dcraw](http://www.cybercom.net/~dcoffin/dcraw/) tool.
@@ -8,7 +10,7 @@ Full list can be found at dcraw home page in section [Supported Cameras](http://
 
 You can control how raw or how processed the opened image is.
 This enables extracting sensor data that is lost when image is converted to a standard viewing format.
-You can chose to concentrate on image analysis rather than on making an eye-pleasing pictures.
+You can choose to concentrate on image analysis rather than on making an eye-pleasing pictures.
 
 The plugin installs under `Plugins` > `Input-Output` > `DCRaw Reader`.
 
