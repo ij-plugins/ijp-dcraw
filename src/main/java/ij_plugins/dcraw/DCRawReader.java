@@ -44,7 +44,7 @@ public final class DCRawReader {
     private String dcrawBinPath;
 
     private static String dcrawExecutableName() {
-        return IJ.isWindows() ? "dcraw/dcraw.exe" : "dcraw/dcraw";
+        return IJ.isWindows() ? "dcraw_emu.exe" : "dcraw_emu";
     }
 
     public void addLogListener(final LogListener listener) {
@@ -83,7 +83,9 @@ public final class DCRawReader {
      */
     private String locateDCRAW() throws DCRawException {
         final String systemDCRawExecutablePath = System.getProperty(SYSTEM_PROPERTY_DCRAW_BIN, null);
-        final File devEnvLocation = new File("plugins" + File.separator + dcrawExecutableName());
+        final String exeRelativeToPluginsDir = "dcraw" + File.separator + dcrawExecutableName();
+        final File devEnvLocation = new File("plugins" + File.separator + exeRelativeToPluginsDir);
+
         if (systemDCRawExecutablePath != null) {
             // Try to read from a system property
             final File file = new File(systemDCRawExecutablePath);
@@ -105,7 +107,7 @@ public final class DCRawReader {
             dcrawBinPath = new File(path).getAbsolutePath();
         } else if (Menus.getPlugInsPath() != null) {
             // Try to locate in ImageJ plugins directory
-            final String path = Menus.getPlugInsPath() + File.separator + dcrawExecutableName();
+            final String path = Menus.getPlugInsPath() + File.separator + exeRelativeToPluginsDir;
             final File file = new File(path);
             if (!file.exists()) {
                 throw new DCRawException(
@@ -139,10 +141,8 @@ public final class DCRawReader {
         final Process process;
         log("Executing command array: " + Arrays.toString(fullCommand));
 
-        // Disable CygWin warning about DOS path names (if running CygWin compiled dcraw)
-        final String[] envp = {"CYGWIN=nodosfilewarning"};
         try {
-            process = Runtime.getRuntime().exec(fullCommand, envp);
+            process = Runtime.getRuntime().exec(fullCommand);
         } catch (final IOException e) {
             throw new DCRawException("IO Error executing system command: '" + command[0] + "'.", e);
         }

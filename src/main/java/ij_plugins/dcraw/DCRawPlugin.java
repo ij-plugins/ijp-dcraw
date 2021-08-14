@@ -72,13 +72,7 @@ public class DCRawPlugin implements PlugIn {
     }
 
     private static String toProcessedFileName(final String rawFileName) {
-        final String processedExtension = ".tiff";
-        final int dotIndex = rawFileName.lastIndexOf('.');
-        if (dotIndex < 0) {
-            return rawFileName + processedExtension;
-        } else {
-            return rawFileName.substring(0, dotIndex) + processedExtension;
-        }
+        return rawFileName + ".tiff";
     }
 
     private static void copyFile(final File sourceFile, final File destFile) throws IOException {
@@ -160,12 +154,6 @@ public class DCRawPlugin implements PlugIn {
             dialog.addChoice("Output_colorspace", asStrings(OutputColorSpaceOption.values()),
                     CONFIG.outputColorSpace.toString());
 
-            // -d        Document mode (no color, no interpolation)
-            dialog.addCheckbox("Document_mode (no color, no interpolation)", CONFIG.documentMode);
-
-            // -D        Document mode without scaling (totally raw)
-            dialog.addCheckbox("Document_mode_without_scaling (totally raw)", CONFIG.documentModeWithoutScaling);
-
             // Image bit format
             dialog.addChoice("Read_as", asStrings(FormatOption.values()), CONFIG.format.toString());
 
@@ -177,8 +165,6 @@ public class DCRawPlugin implements PlugIn {
 
             dialog.addCheckbox("Do_not_rotate or scale pixels (preserve orientation and aspect ratio)",
                     CONFIG.doNotRotate);
-
-            dialog.addCheckbox("Show_metadata in Result window", CONFIG.showMetadata);
 
             dialog.addHelp(HELP_URL);
 
@@ -196,13 +182,10 @@ public class DCRawPlugin implements PlugIn {
             CONFIG.whiteBalance = WhiteBalanceOption.byName(dialog.getNextChoice());
             CONFIG.doNotAutomaticallyBrightenTheImage = dialog.getNextBoolean();
             CONFIG.outputColorSpace = OutputColorSpaceOption.byName(dialog.getNextChoice());
-            CONFIG.documentMode = dialog.getNextBoolean();
-            CONFIG.documentModeWithoutScaling = dialog.getNextBoolean();
             CONFIG.format = FormatOption.byName(dialog.getNextChoice());
             CONFIG.interpolationQuality = InterpolationQualityOption.byName(dialog.getNextChoice());
             CONFIG.halfSize = dialog.getNextBoolean();
             CONFIG.doNotRotate = dialog.getNextBoolean();
-            CONFIG.showMetadata = dialog.getNextBoolean();
 
             if (CONFIG.useTmpDir) {
                 // Copy file to a temp file to avoid overwriting data ast the source
@@ -232,7 +215,7 @@ public class DCRawPlugin implements PlugIn {
                 actualInput = rawFile;
             }
 
-            // Check if PPM file existed before it will be written created by DCRAW
+            // Check if TIFF file existed before it will be written created by DCRAW
             processedFile = new File(actualInput.getParentFile(), toProcessedFileName(actualInput.getName()));
             removeProcessed = !processedFile.exists();
 
@@ -264,16 +247,6 @@ public class DCRawPlugin implements PlugIn {
             commandList.add("-o");
             commandList.add(CONFIG.outputColorSpace.getOption());
 
-            // -d Document mode (no color, no interpolation)
-            if (CONFIG.documentMode) {
-                commandList.add("-d");
-            }
-
-            // -D Document mode without scaling (totally raw)
-            if (CONFIG.documentModeWithoutScaling) {
-                commandList.add("-D");
-            }
-
             // Image bit format
             if (!CONFIG.format.getOption().trim().isEmpty()) {
                 commandList.add(CONFIG.format.getOption());
@@ -293,8 +266,6 @@ public class DCRawPlugin implements PlugIn {
                 commandList.add("-j");
             }
 
-            final boolean showMatadata = CONFIG.showMetadata;
-
             // Add input raw file
             commandList.add(actualInput.getAbsolutePath());
 
@@ -313,7 +284,7 @@ public class DCRawPlugin implements PlugIn {
 
             // Read PPM file
             if (!processedFile.exists()) {
-                IJ.error("Unable to locate DCRAW output PPM file: '" + processedFile.getAbsolutePath() + "'.");
+                IJ.error("Unable to locate DCRAW output TIFF file: '" + processedFile.getAbsolutePath() + "'.");
                 return;
             }
             IJ.showStatus("Opening: " + processedFile.getAbsolutePath());
@@ -324,22 +295,6 @@ public class DCRawPlugin implements PlugIn {
                 // Set image name, default name may contain temporary file name used during conversion
                 imp.setTitle(rawFile.getName());
                 imp.show();
-            }
-
-
-            // Use DCRaw to extract metadata
-            if (showMatadata) {
-                final String[] metadataCommand = new String[]{"-i", "-v", '"' + rawFile.getAbsolutePath() + '"'};
-                final String metadataOutput;
-                try {
-                    metadataOutput = dcRawReader.executeCommand(metadataCommand);
-                } catch (DCRawException e) {
-                    e.printStackTrace();
-                    IJ.error(title, e.getMessage());
-                    IJ.showMessage("About " + title, ABOUT);
-                    return;
-                }
-                IJ.log(metadataOutput);
             }
         } finally {
             //
@@ -366,13 +321,10 @@ public class DCRawPlugin implements PlugIn {
         public WhiteBalanceOption whiteBalance = WhiteBalanceOption.CAMERA;
         public boolean doNotAutomaticallyBrightenTheImage;
         public OutputColorSpaceOption outputColorSpace = OutputColorSpaceOption.RAW;
-        public boolean documentMode;
-        public boolean documentModeWithoutScaling;
         public FormatOption format = FormatOption.F_8_BIT;
         public InterpolationQualityOption interpolationQuality = InterpolationQualityOption.HIGH_SPEED;
         public boolean halfSize;
         public boolean doNotRotate;
-        public boolean showMetadata;
         boolean useTmpDir = true;
     }
 }

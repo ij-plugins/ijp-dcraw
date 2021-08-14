@@ -59,7 +59,7 @@ public final class DCRawReaderTest {
         final File inFile = new File("../test/data/IMG 56 04.CR2");
         assertTrue("File exists: " + inFile.getAbsolutePath(), inFile.exists());
 
-        final File outputFile = new File("../test/data/IMG 56 04.tiff");
+        final File outputFile = new File(inFile.getAbsolutePath() + ".tiff");
         if (outputFile.exists())
             if (!outputFile.delete())
                 fail("Unable to delete output file: " + outputFile.getAbsolutePath());
