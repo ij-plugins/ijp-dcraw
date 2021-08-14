@@ -224,7 +224,8 @@ public final class DCRawReader {
         ADOBE("Adobe", "2"),
         WIDE("Wide", "3"),
         PRO_PHOTO("ProPhoto", "4"),
-        XYZ("XYZ", "5");
+        XYZ("XYZ", "5"),
+        ACES("ACES", "6");
         private final String name;
         private final String option;
 
