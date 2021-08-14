@@ -322,7 +322,7 @@ public class DCRawPlugin implements PlugIn {
         public boolean doNotAutomaticallyBrightenTheImage;
         public OutputColorSpaceOption outputColorSpace = OutputColorSpaceOption.RAW;
         public FormatOption format = FormatOption.F_8_BIT;
-        public InterpolationQualityOption interpolationQuality = InterpolationQualityOption.HIGH_SPEED;
+        public InterpolationQualityOption interpolationQuality = InterpolationQualityOption.DHT;
         public boolean halfSize;
         public boolean doNotRotate;
         boolean useTmpDir = true;

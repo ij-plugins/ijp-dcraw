@@ -285,7 +285,10 @@ public final class DCRawReader {
         HIGH_SPEED("High-speed, low-quality bilinear", "0"),
         VNG("Variable Number of Gradients (VNG)", "1"),
         PPG("Patterned Pixel Grouping (PPG)", "2"),
-        AHD("Adaptive Homogeneity-Directed (AHD)", "3");
+        AHD("Adaptive Homogeneity-Directed (AHD)", "3"),
+        DCB("DCB", "4"),
+        DHT("DHT", "11"),
+        AAHD("Modified AHD (AAHD)", "12");
         private final String name;
         private final String option;
 
