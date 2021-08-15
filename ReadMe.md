@@ -100,36 +100,32 @@ import ij.IJ;
 import ij.ImagePlus;
 
 class Example {
-    public static void main(String[] args) {
-        // Input file
-        final File inFile = new File("test/data/IMG_5604.CR2");
+   public static void main(String[] args) {
+      // Input file
+      final File inFile = new File("test/data/IMG_5604.CR2");
 
-        // dcraw wrapper
-        final DCRawReader dcRawReader = new DCRawReader();
+      // dcraw wrapper
+      final DCRawReader dcRawReader = new DCRawReader();
 
-        // Listen to output messages
-        dcRawReader.addLogListener(new DCRawReader.LogListener() {
-            @Override
-            public void log(String message) {
-                System.out.println("message = " + message);
-            }
-        });
+      // Listen to output messages
+      dcRawReader.addLogListener(
+              m -> System.out.println("message = " + m));
 
-        // Execute dcraw
-        dcRawReader.executeCommand(new String[]{
-                "-v", // Print verbose messages
-                "-w", // Use camera white balance, if possible
-                "-T", // Write TIFF instead of PPM
-                "-j", // Don't stretch or rotate raw pixels
-                "-W", // Don't automatically brighten the image
-                inFile.getAbsolutePath()});
+      // Execute dcraw
+      dcRawReader.executeCommand(new String[]{
+              "-v", // Print verbose messages
+              "-w", // Use camera white balance, if possible
+              "-T", // Write TIFF instead of PPM
+              "-j", // Don't stretch or rotate raw pixels
+              "-W", // Don't automatically brighten the image
+              inFile.getAbsolutePath()});
 
-        // Cleanup
-        dcRawReader.removeAllLogListeners();
+      // Cleanup
+      dcRawReader.removeAllLogListeners();
 
-        // Load converted file, it is the same location as original raw file but with extension '.tiff'
-        final ImagePlus imp = IJ.openImage("test/data/IMG_5604.tiff");
-    }
+      // Load converted file, it is the same location as original raw file but with extension '.tiff'
+      final ImagePlus imp = IJ.openImage("test/data/IMG_5604.CR2.tiff");
+   }
 }
 
 ```
