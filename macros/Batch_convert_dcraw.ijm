@@ -47,18 +47,15 @@ while (fileNumber < fileList.length) {
     // Read input image
     run("DCRaw Reader...",
         "open=" + dirSrc + id + " " +
-            "use_temporary_directory " +
-            "white_balance=[Camera white balance] " +
-//            "do_not_automatically_brighten " +
-            "output_colorspace=[raw] " +
-//            "document_mode " +
-//            "document_mode_without_scaling " +
-            "read_as=[8-bit] " +
-            "interpolation=[High-speed, low-quality bilinear] " +
-//            "half_size " +
-//            "do_not_rotate " +
-//            "show_metadata" +
-            "");
+        "use_temporary_directory " +
+        "white_balance=[Camera white balance] " +
+        //            "do_not_automatically_brighten " +
+        "output_colorspace=[sRGB] " +
+        "read_as=[8-bit] " +
+        "interpolation=[DHT] " +
+        //            "half_size " +
+        //            "do_not_rotate " +
+        "");
     idSrc = getImageID();
 
     // Save result
