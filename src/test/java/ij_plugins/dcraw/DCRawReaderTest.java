@@ -56,7 +56,7 @@ public final class DCRawReaderTest {
     public void testExecuteCommand() throws DCRawException {
 
         // Input file
-        final File inFile = new File("../test/data/IMG 56 04.CR2");
+        final File inFile = new File("../test/data/IMG_5604.CR2");
         assertTrue("File exists: " + inFile.getAbsolutePath(), inFile.exists());
 
         final File outputFile = new File(inFile.getAbsolutePath() + ".tiff");
