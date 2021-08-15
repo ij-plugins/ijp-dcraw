@@ -22,6 +22,12 @@ file `IJ_Props.txt`. Example line that should be added to `IJ_Props.txt`
 
 Note period at the beginning of property name, it is required by ImageJ.
 
+Related Plugins
+---------------
+
+* [ijp-color] Contains plugin [IJP Color Calibrator] that can be used to color calibrated raw images. For instance, it works well with "16-bit linear" images.
+* [ijp-DeBayer2SX] an alternative way to demosaic raw images
+
 Tips and Tricks
 ---------------
 
@@ -164,3 +170,7 @@ ijp-dcraw project was originally hosted on [SourceForge]. Releases 1.5 and older
 [Releases]: https://github.com/ij-plugins/ijp-dcraw/releases
 
 [SourceForge]: http://ij-plugins.sourceforge.net/plugins/dcraw/index.html
+
+[ijp-color]: https://github.com/ij-plugins/ijp-color
+[ijp-DeBayer2SX]: https://github.com/ij-plugins/ijp-DeBayer2SX
+[IJP Color Calibrator]: https://github.com/ij-plugins/ijp-color/wiki/Color-Calibrator
