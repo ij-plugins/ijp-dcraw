@@ -10,7 +10,7 @@ organizationHomepage := Some(url("https://github.com/ij-plugins"))
 startYear            := Some(2008)
 licenses             := Seq(("LGPL-2.1", new URL("http://opensource.org/licenses/LGPL-2.1")))
 description          := "ijp-dcraw provides ImageJ plugin to read raw images using DCRAW. " +
-  "For more detailed information see IJP-ImageIO home page: https://github.com/ij-plugins/ijp-dcraw/wiki."
+  "For more detailed information see IJP-ImageIO home page: https://github.com/ij-plugins/ijp-dcraw."
 
 libraryDependencies ++= Seq(
   "net.imagej"   % "ij"              % "1.53j",

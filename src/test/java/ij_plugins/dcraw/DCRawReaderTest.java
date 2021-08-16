@@ -33,7 +33,8 @@ import static org.junit.Assert.*;
 
 /**
  * For this test to work you may have to set system property 'dcrawExecutable.path' to absolute location of
- * dcraw executable.  It can be done, for instance, through a command line options '-DdcrawExecutable.path=/bin/dcraw'
+ * dcraw_emu executable.
+ * It can be done, for instance, through a command line options '-DdcrawExecutable.path=/bin/dcraw_emu'
  *
  * @author Jarek Sacha
  * @since 8/5/11 3:23 PM
