@@ -25,10 +25,8 @@ Note period at the beginning of property name, it is required by ImageJ.
 Installation
 ------------
 
-1. Download `ij-dcraw_plugins_*_win_macos.zip` from the [Releases] page. Binaries, taken from the [LibRaw] release are
-   provided for Windows and macOS.
-2. Unzip to ImageJ plugins directory. By default, the DCRaw Reader looks for the `dcraw_emu` binary in the
-   subdirectory "dcraw" of the ImageJ plugins folder.
+1. Download `ijp-dcraw_plugins_*_win_macos.zip` from the [Releases] page. Binaries, taken from the [LibRaw] release are provided for Windows and macOS.
+2. Unzip to ImageJ plugins directory. By default, the DCRaw Reader looks for the `dcraw_emu` binary in the subdirectory "dcraw" of the ImageJ plugins folder.
 3. Restart ImageJ
 
 The plugin installs under `Plugins` > `Input-Output` > `DCRaw Reader...`.
