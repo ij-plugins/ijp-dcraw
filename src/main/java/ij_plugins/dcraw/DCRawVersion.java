@@ -32,7 +32,7 @@ package ij_plugins.dcraw;
 public class DCRawVersion {
 
     private static final DCRawVersion OUR_INSTANCE = new DCRawVersion();
-    private static final String VERSION = "1.6.0.0-SNAPSHOT";
+    private static final String VERSION = "1.6.0";
 
 
     private DCRawVersion() {
