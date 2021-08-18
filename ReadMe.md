@@ -4,7 +4,7 @@ ijp-dcraw
 [![Scala CI](https://github.com/ij-plugins/ijp-dcraw/actions/workflows/scala.yml/badge.svg)](https://github.com/ij-plugins/ijp-dcraw/actions/workflows/scala.yml)
 
 `ijp-dcraw` provides ImageJ plugin "DCRaw Reader" to open raw images from digital cameras. Originally the backend was
-provided by [dcraw] tool. Current versions is using [LibRaw]/`dcraw_emu` tool. The hundreds of supported cameras ate
+provided by [dcraw] tool. Current versions is using [LibRaw]/`dcraw_emu` tool. The hundreds of supported cameras are
 listed on [LibRaw Supported Cameras] page.
 
 ![Image Calibrator](assets/DCRaw_Reader_Dialog.png)
