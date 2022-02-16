@@ -13,20 +13,28 @@ listed on [LibRaw Supported Cameras] page.
 system can be added manually.
 
 By default, the "DCRaw Reader" plugin looks for the `dcraw_emu` binary in subdirectory `dcraw` of ImageJ plugins folder.
-Alternative location can be specified by adding property `.dcrawExecutable.path` to ImageJ properties
-file `IJ_Props.txt`. Example line that should be added to `IJ_Props.txt`
+Alternative location can be specified by one of:
 
-```
-.dcrawExecutable.path=C:/apps/bin/dcraw_emu.exe
-```
+1. Setting Java system property `dcrawExecutable.path` to location of dcraw executable, for instance:
 
-Note period at the beginning of property name, it is required by ImageJ.
+  ```
+    -DdcrawExecutable.path=bin/dcraw_emu.exe
+  ```
+
+2. or adding property `.dcrawExecutable.path` to ImageJ properties file `IJ_Props.txt`. Note period at the beginning of
+   property name, it is required by ImageJ. Example line that should be added to `IJ_Props.txt`
+
+  ```
+    .dcrawExecutable.path=C:/apps/bin/dcraw_emu.exe
+  ```
 
 Installation
 ------------
 
-1. Download `ijp-dcraw_plugins_*_win_macos.zip` from the [Releases] page. Binaries, taken from the [LibRaw] release are provided for Windows and macOS.
-2. Unzip to ImageJ plugins directory. By default, the DCRaw Reader looks for the `dcraw_emu` binary in the subdirectory "dcraw" of the ImageJ plugins folder.
+1. Download `ijp-dcraw_plugins_*_win_macos.zip` from the [Releases] page. Binaries, taken from the [LibRaw] release are
+   provided for Windows and macOS.
+2. Unzip to ImageJ plugins directory. By default, the DCRaw Reader looks for the `dcraw_emu` binary in the
+   subdirectory "dcraw" of the ImageJ plugins folder.
 3. Restart ImageJ
 
 The plugin installs under `Plugins` > `Input-Output` > `DCRaw Reader...`.
