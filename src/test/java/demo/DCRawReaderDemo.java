@@ -1,6 +1,6 @@
 /*
  * IJ-Plugins
- * Copyright (C) 2021-2021 Jarek Sacha
+ * Copyright (C) 2021-2022 Jarek Sacha
  * Author's email: jpsacha at gmail dot com
  *
  * This library is free software; you can redistribute it and/or
@@ -29,6 +29,15 @@ import ij_plugins.dcraw.DCRawReader;
 
 import java.io.File;
 
+/**
+ * Sample use of DCRaw.
+ * <p>
+ * Note, you need to provide location of the DCRaw executable, for instance,
+ * using system variable <code>dcrawExecutable.path</code>:
+ * <pre>
+ *   -DdcrawExecutable.path=bin/dcraw_emu.exe
+ * </pre>
+ */
 class DCRawReaderDemo {
 
     public static void main(String[] args) throws DCRawException {
