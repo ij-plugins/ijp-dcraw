@@ -25,8 +25,7 @@ fork := true
 javaOptions ++= Seq("-Xmx2G", "-server")
 Compile/compile/javacOptions ++= Seq(
   "-Xlint",
-  "-target", "1.8",
-  "-source", "1.8"
+  "--release", "8"
   )
 Compile/doc/javacOptions ++= Seq(
   "-windowtitle", "IJP-DCRaw API v." + version.value,
