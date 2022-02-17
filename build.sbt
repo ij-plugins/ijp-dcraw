@@ -3,7 +3,7 @@ import java.net.URL
 
 name         := "ijp_dcraw"
 organization := "net.sf.ij-plugins"
-version      := "1.6.0"
+version      := "1.6.0.1-SNAPSHOT"
 
 homepage             := Some(new URL("https://github.com/ij-plugins/ijp-dcraw"))
 organizationHomepage := Some(url("https://github.com/ij-plugins"))
@@ -25,8 +25,7 @@ fork := true
 javaOptions ++= Seq("-Xmx2G", "-server")
 Compile/compile/javacOptions ++= Seq(
   "-Xlint",
-  "-target", "1.8",
-  "-source", "1.8"
+  "--release", "8"
   )
 Compile/doc/javacOptions ++= Seq(
   "-windowtitle", "IJP-DCRaw API v." + version.value,

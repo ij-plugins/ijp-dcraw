@@ -36,7 +36,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Objects;
 
 
 /**
@@ -181,8 +180,7 @@ public final class IJPUtils {
 
                         public void mouseExited(MouseEvent e) {
                             super.mouseExited(e);
-                            logoLabel.setCursor(
-                                    Objects.requireNonNullElseGet(_oldCursor, () -> new Cursor(Cursor.DEFAULT_CURSOR)));
+                            logoLabel.setCursor(_oldCursor != null ? _oldCursor : new Cursor(Cursor.DEFAULT_CURSOR));
                         }
                     });
             return logoLabel;
