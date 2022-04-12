@@ -13,7 +13,7 @@ description          := "ijp-dcraw provides ImageJ plugin to read raw images usi
   "For more detailed information see IJP-ImageIO home page: https://github.com/ij-plugins/ijp-dcraw."
 
 libraryDependencies ++= Seq(
-  "net.imagej"   % "ij"              % "1.53j",
+  "net.imagej"   % "ij"              % "1.53q",
   "junit"        % "junit"           % "4.13.2"  % "test",
   "com.novocode" % "junit-interface" % "0.11"    % "test->default"
   )
