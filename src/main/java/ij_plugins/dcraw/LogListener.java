@@ -1,6 +1,6 @@
 /*
  * IJ-Plugins
- * Copyright (C) 2021-2022 Jarek Sacha
+ * Copyright (C) 2022-2022 Jarek Sacha
  * Author's email: jpsacha at gmail dot com
  *
  * This library is free software; you can redistribute it and/or
@@ -20,31 +20,16 @@
  * Latest release available at https://github.com/ij-plugins/ijp-toolkit/
  */
 
-package demo;
-
-import ij.ImagePlus;
-import ij_plugins.dcraw.DCRawException;
-import ij_plugins.dcraw.DCRawReader;
-
-import java.io.File;
+package ij_plugins.dcraw;
 
 /**
- * Sample use of DCRaw.
- * <p>
- * Note, you need to provide location of the DCRaw executable, for instance,
- * using system variable <code>dcrawExecutable.path</code>:
- * <pre>
- *   -DdcrawExecutable.path=bin/dcraw_emu.exe
- * </pre>
+ * Log callback.
  */
-class DCRawReaderDemo {
-
-    public static void main(String[] args) throws DCRawException {
-
-//        final File inFile = new File("../test/data/IMG_5604.CR2");
-        final File inFile = new File("C:/Users/ac4566/Osobiste/Projects/IJ-Plugins/ij-plugins.github/ijp-dcraw/binaries/windows/raw-identify.exe");
-        final ImagePlus imp = new DCRawReader().read(inFile);
-        System.out.println("Loaded converted raw file: " + imp.getWidth() + " by " + imp.getHeight());
-    }
+public interface LogListener {
+    /**
+     * Called when new log message is ready
+     *
+     * @param message log message
+     */
+    void log(String message);
 }
-

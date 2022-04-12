@@ -29,7 +29,7 @@ import ij_plugins.dcraw.DCRawReader;
 import java.io.File;
 
 /**
- * Sample use of DCRaw.
+ * Example of using DCRaw with custom processing options.
  * <p>
  * Note, you need to provide location of the DCRaw executable, for instance,
  * using system variable <code>dcrawExecutable.path</code>:
@@ -37,13 +37,27 @@ import java.io.File;
  *   -DdcrawExecutable.path=bin/dcraw_emu.exe
  * </pre>
  */
-class DCRawReaderDemo {
+class DCRawReaderDemo2 {
 
     public static void main(String[] args) throws DCRawException {
 
-//        final File inFile = new File("../test/data/IMG_5604.CR2");
-        final File inFile = new File("C:/Users/ac4566/Osobiste/Projects/IJ-Plugins/ij-plugins.github/ijp-dcraw/binaries/windows/raw-identify.exe");
-        final ImagePlus imp = new DCRawReader().read(inFile);
+        // Raw file to read
+        final File inFile = new File("../test/data/IMG_5604.CR2");
+
+        // Create reader
+        final DCRawReader dcRawReader = new DCRawReader(
+                m -> System.out.println("DCReader Log  : " + m),
+                m -> System.out.println("DCReader Error: " + m)
+        );
+
+        // Customize read options
+        final DCRawReader.Config config = new DCRawReader.Config();
+        config.interpolationQuality = DCRawReader.InterpolationQualityOption.HIGH_SPEED;
+        config.halfSize = true;
+        config.outputColorSpace = DCRawReader.OutputColorSpaceOption.SRGB;
+
+        final ImagePlus imp = dcRawReader.read(inFile, config);
+
         System.out.println("Loaded converted raw file: " + imp.getWidth() + " by " + imp.getHeight());
     }
 }

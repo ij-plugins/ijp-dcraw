@@ -1,6 +1,6 @@
 /*
  * IJ-Plugins
- * Copyright (C) 2002-2021 Jarek Sacha
+ * Copyright (C) 2002-2022 Jarek Sacha
  * Author's email: jpsacha at gmail dot com
  *
  * This library is free software; you can redistribute it and/or
@@ -90,9 +90,10 @@ public final class IJPUtils {
     }
 
     /**
+     * <p>
      * Create simple info panel for a plugin dialog. Intended to be displayed at the top. Includes default logo.
      * Title is displayed in large bold letters. Message can be HTML formatted.
-     * <p/>
+     * </p>
      * Sample use:
      * <pre>
      *    final GenericDialog dialog = new GenericDialog(TITLE);
@@ -207,5 +208,9 @@ public final class IJPUtils {
                             "  " + uri.toString() + "\n" +
                             ex.getMessage());
         }
+    }
+
+    public static boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
     }
 }
