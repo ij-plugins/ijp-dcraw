@@ -37,7 +37,9 @@ import java.util.Optional;
 
 /**
  * Reads digital camera raw files using DCRAW executable.
- * More info on DCRAW at <a href="http://www.cybercom.net/%7Edcoffin/dcraw/">http://www.cybercom.net/%7Edcoffin/dcraw/</a>.
+ * More info on DCRAW at <a href="https://en.wikipedia.org/wiki/Dcraw">https://en.wikipedia.org/wiki/Dcraw</a>.
+ * <p>
+ * Newer versions of the backend executable are provided by the <a href="https://www.libraw.org/">LibRaw</a> project.
  *
  * @author Jarek Sacha
  */
