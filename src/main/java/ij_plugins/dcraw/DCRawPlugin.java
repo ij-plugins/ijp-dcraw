@@ -1,6 +1,6 @@
 /*
  * IJ-Plugins
- * Copyright (C) 2002-2021 Jarek Sacha
+ * Copyright (C) 2002-2022 Jarek Sacha
  * Author's email: jpsacha at gmail dot com
  *
  * This library is free software; you can redistribute it and/or
@@ -29,12 +29,7 @@ import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
 import static ij_plugins.dcraw.DCRawReader.*;
 
@@ -42,7 +37,7 @@ import static ij_plugins.dcraw.DCRawReader.*;
 /**
  * Plugin for opening RAW images. It calls DCRAW to convert a RAW image to PPM then loads that PPM image.
  * <br>
- * The home site for DCRAW is http://www.cybercom.net/~dcoffin/dcraw/.
+ * The home site for DCRAW is now <a href="https://www.libraw.org/"></a>.
  *
  * @author Jarek Sacha
  */
@@ -59,34 +54,10 @@ public class DCRawPlugin implements PlugIn {
             "\"DCRaw Reader\" plugin open image file in a camera raw format using the \"dcraw\" tool created by Dave Coffin." +
             "</p>" +
             "<p>" +
-            "For more information about \"DCRaw Reader\" see project page at  <a href=\"" + HELP_URL + "\">" + HELP_URL + "</a> " +
+            "For more information about \"DCRaw Reader\" see project page at <a href=\"" + HELP_URL + "\">" + HELP_URL + "</a> " +
             "</p>" +
             "</html>";
-    //    private static boolean useTmpDir = true;
-    private static final Config CONFIG = new Config();
-
-    private static void log(final String message) {
-        if (IJ.debugMode) {
-            IJ.log(message);
-        }
-    }
-
-    private static String toProcessedFileName(final String rawFileName) {
-        return rawFileName + ".tiff";
-    }
-
-    private static void copyFile(final File sourceFile, final File destFile) throws IOException {
-        if (!destFile.exists()) {
-            if (!destFile.createNewFile()) {
-                throw new IOException("Destination file cannot be created: " + destFile.getPath());
-            }
-        }
-
-        try (FileChannel source = new FileInputStream(sourceFile).getChannel();
-             FileChannel destination = new FileOutputStream(destFile).getChannel()) {
-            destination.transferFrom(source, 0, source.size());
-        }
-    }
+    private static DCRawReader.Config CONFIG = new DCRawReader.Config();
 
     private static <T> String[] asStrings(T[] v) {
         final String[] r = new String[v.length];
@@ -106,225 +77,110 @@ public class DCRawPlugin implements PlugIn {
             return;
         }
 
-        final DCRawReader dcRawReader = new DCRawReader();
-        dcRawReader.addLogListener(DCRawPlugin::log);
-        File processedFile = null;
-        boolean removeProcessed = false;
-        File actualInput = null;
+        LogListener statusLogger = message -> {
+            IJ.showStatus("DCRaw: " + message);
+            if (IJ.debugMode) IJ.log("DCRaw: " + message);
+        };
+        LogListener errorLogger = message -> {
+            IJ.showStatus("ERROR DCRaw: " + message);
+            if (IJ.debugMode) IJ.log("ERROR DCRaw: " + message);
+        };
+
+        final DCRawReader dcRawReader = new DCRawReader(Optional.of(statusLogger), Optional.of(errorLogger));
+
+        // Verify that could talk to DCRAW before asking the user to select options
         try {
-            // Verify that could talk to DCRAW
-            try {
-                dcRawReader.validateDCRaw();
-            } catch (DCRawException e) {
-                e.printStackTrace();
-                IJ.error(title, e.getMessage());
-                IJ.showMessage("About " + title, ABOUT);
-                return;
-            }
-
-            // Ask for location of the RAW file to read
-            final OpenDialog openDialog = new OpenDialog("Open", null);
-            if (openDialog.getFileName() == null) {
-                // No selection
-                return;
-            }
-
-            final File rawFile = new File(openDialog.getDirectory(), openDialog.getFileName());
-            IJ.showStatus("Opening RAW file: " + rawFile.getName());
-
-
-            //
-            // Setup options dialog
-            //
-            final GenericDialog dialog = new GenericDialog(title);
-            dialog.setIconImage(IJPUtils.imageJIconAsAWTImage());
-
-            dialog.addPanel(IJPUtils.createInfoPanel(TITLE, HTML_DESCRIPTION));
-
-            dialog.addCheckbox("Use_temporary_directory for processing", CONFIG.useTmpDir);
-
-            // Auto white balance
-            dialog.addChoice("White_balance", asStrings(WhiteBalanceOption.values()),
-                    CONFIG.whiteBalance.toString());
-
-            dialog.addCheckbox("Do_not_automatically_brighten the image",
-                    CONFIG.doNotAutomaticallyBrightenTheImage);
-
-            // -o [0-5]  Output colorspace (raw,sRGB,Adobe,Wide,ProPhoto,XYZ)
-            dialog.addChoice("Output_colorspace", asStrings(OutputColorSpaceOption.values()),
-                    CONFIG.outputColorSpace.toString());
-
-            // Image bit format
-            dialog.addChoice("Read_as", asStrings(FormatOption.values()), CONFIG.format.toString());
-
-            // Interpolation quality
-            dialog.addChoice("Interpolation quality", asStrings(InterpolationQualityOption.values()),
-                    CONFIG.interpolationQuality.toString());
-
-            dialog.addCheckbox("Half_size", CONFIG.halfSize);
-
-            dialog.addCheckbox("Do_not_rotate or scale pixels (preserve orientation and aspect ratio)",
-                    CONFIG.doNotRotate);
-
-            dialog.addHelp(HELP_URL);
-
-            //
-            // Show dialog
-            //
-            dialog.showDialog();
-
-            if (dialog.wasCanceled()) {
-                // No selection
-                return;
-            }
-
-            CONFIG.useTmpDir = dialog.getNextBoolean();
-            CONFIG.whiteBalance = WhiteBalanceOption.byName(dialog.getNextChoice());
-            CONFIG.doNotAutomaticallyBrightenTheImage = dialog.getNextBoolean();
-            CONFIG.outputColorSpace = OutputColorSpaceOption.byName(dialog.getNextChoice());
-            CONFIG.format = FormatOption.byName(dialog.getNextChoice());
-            CONFIG.interpolationQuality = InterpolationQualityOption.byName(dialog.getNextChoice());
-            CONFIG.halfSize = dialog.getNextBoolean();
-            CONFIG.doNotRotate = dialog.getNextBoolean();
-
-            if (CONFIG.useTmpDir) {
-                // Copy file to a temp file to avoid overwriting data ast the source
-                // DCRAW always writes output in the same directory as the input file.
-                try {
-                    actualInput = File.createTempFile("dcraw_", "_" + rawFile.getName());
-                    actualInput.deleteOnExit();
-                } catch (final IOException e) {
-                    e.printStackTrace();
-                    IJ.error(title, "Failed to create temporary file for processing. " + e.getMessage());
-                    return;
-                }
-
-                {
-                    final String m = "Copying input to " + actualInput.getAbsolutePath();
-                    IJ.showStatus(m);
-                    log(m);
-                }
-                try {
-                    copyFile(rawFile, actualInput);
-                } catch (final IOException e) {
-                    e.printStackTrace();
-                    IJ.error(title, "Failed to copy image to a temporary file for processing. " + e.getMessage());
-                    return;
-                }
-            } else {
-                actualInput = rawFile;
-            }
-
-            // Check if TIFF file existed before it will be written created by DCRAW
-            processedFile = new File(actualInput.getParentFile(), toProcessedFileName(actualInput.getName()));
-            removeProcessed = !processedFile.exists();
-
-
-            //
-            // Convert user choices to command line options
-            //
-
-            // Command line components
-            final List<String> commandList = new ArrayList<>();
-
-            // Turn on verbose messages
-            commandList.add("-v");
-
-            // Convert images to TIFF (otherwise DCRAW may produce PPM or PGM depending on processing)
-            commandList.add("-T");
-
-            // White balance
-            if (!CONFIG.whiteBalance.getOption().trim().isEmpty()) {
-                commandList.add(CONFIG.whiteBalance.getOption());
-            }
-
-            // Brightness adjustment
-            if (CONFIG.doNotAutomaticallyBrightenTheImage) {
-                commandList.add("-W");
-            }
-
-            // Colorspace
-            commandList.add("-o");
-            commandList.add(CONFIG.outputColorSpace.getOption());
-
-            // Image bit format
-            if (!CONFIG.format.getOption().trim().isEmpty()) {
-                commandList.add(CONFIG.format.getOption());
-            }
-
-            // Interpolation quality
-            commandList.add("-q");
-            commandList.add(CONFIG.interpolationQuality.getOption());
-
-            // Extract at half size
-            if (CONFIG.halfSize) {
-                commandList.add("-h");
-            }
-
-            // Do not rotate or correct pixel aspect ratio
-            if (CONFIG.doNotRotate) {
-                commandList.add("-j");
-            }
-
-            // Add input raw file
-            commandList.add(actualInput.getAbsolutePath());
-
-            //
-            // Run DCRAW
-            //
-            final String[] command = commandList.toArray(new String[0]);
-            try {
-                dcRawReader.executeCommand(command);
-            } catch (DCRawException e) {
-                e.printStackTrace();
-                IJ.error(title, e.getMessage());
-                IJ.showMessage("About " + title, ABOUT);
-                return;
-            }
-
-            // Read PPM file
-            if (!processedFile.exists()) {
-                IJ.error("Unable to locate DCRAW output TIFF file: '" + processedFile.getAbsolutePath() + "'.");
-                return;
-            }
-            IJ.showStatus("Opening: " + processedFile.getAbsolutePath());
-            final ImagePlus imp = IJ.openImage(processedFile.getAbsolutePath());
-            if (imp == null) {
-                IJ.error(TITLE, "Failed to open converted image file: " + processedFile.getAbsolutePath());
-            } else {
-                // Set image name, default name may contain temporary file name used during conversion
-                imp.setTitle(rawFile.getName());
-                imp.show();
-            }
-        } finally {
-            //
-            // Cleanup
-            //
-            dcRawReader.removeAllLogListeners();
-            // Remove processed file if needed
-            if ((CONFIG.useTmpDir || removeProcessed) && processedFile != null && processedFile.exists()) {
-                if (!processedFile.delete()) {
-                    IJ.error(title, "Failed to delete the processed file: " + processedFile.getAbsolutePath());
-                }
-            }
-            // Remove temporary copy of the raw file
-            if (CONFIG.useTmpDir && actualInput != null && actualInput.exists()) {
-                if (!actualInput.delete()) {
-                    IJ.error(title, "Failed to delete temporary copy of the raw file: " + actualInput.getAbsolutePath());
-                }
-            }
+            dcRawReader.validateDCRawExec();
+        } catch (DCRawException e) {
+            e.printStackTrace();
+            errorLogger.log(e.getMessage());
+            return;
         }
 
+        // Ask for location of the RAW file to read
+        final OpenDialog openDialog = new OpenDialog("Open", null);
+        if (openDialog.getFileName() == null) {
+            // No selection
+            return;
+        }
+
+        final File rawFile = new File(openDialog.getDirectory(), openDialog.getFileName());
+        IJ.showStatus("Converting RAW file: " + rawFile.getName());
+
+        final Optional<DCRawReader.Config> dstConfig = showDialog(CONFIG, title);
+
+        dstConfig.ifPresent(config -> {
+            CONFIG = config;
+            try {
+                final ImagePlus dst = dcRawReader.read(rawFile, config);
+                statusLogger.log("Opening RAW file: " + rawFile.getName());
+                dst.show();
+            } catch (final DCRawException e) {
+                e.printStackTrace();
+                errorLogger.log(e.getMessage());
+                IJ.error(TITLE, e.getMessage());
+                IJ.showMessage("About " + title, ABOUT);
+
+            }
+        });
     }
 
-    private static class Config {
-        public WhiteBalanceOption whiteBalance = WhiteBalanceOption.CAMERA;
-        public boolean doNotAutomaticallyBrightenTheImage;
-        public OutputColorSpaceOption outputColorSpace = OutputColorSpaceOption.RAW;
-        public FormatOption format = FormatOption.F_8_BIT;
-        public InterpolationQualityOption interpolationQuality = InterpolationQualityOption.DHT;
-        public boolean halfSize;
-        public boolean doNotRotate;
-        boolean useTmpDir = true;
+    private Optional<DCRawReader.Config> showDialog(final DCRawReader.Config oldConfig, final String title) {
+        //
+        // Setup options dialog
+        //
+        final GenericDialog dialog = new GenericDialog(title);
+        dialog.setIconImage(IJPUtils.imageJIconAsAWTImage());
+
+        dialog.addPanel(IJPUtils.createInfoPanel(TITLE, HTML_DESCRIPTION));
+
+        dialog.addCheckbox("Use_temporary_directory for processing", CONFIG.useTmpDir);
+
+        // Auto white balance
+        dialog.addChoice("White_balance", asStrings(WhiteBalanceOption.values()),
+                oldConfig.whiteBalance.toString());
+
+        dialog.addCheckbox("Do_not_automatically_brighten the image",
+                oldConfig.doNotAutomaticallyBrightenTheImage);
+
+        // -o [0-5]  Output colorspace (raw,sRGB,Adobe,Wide,ProPhoto,XYZ)
+        dialog.addChoice("Output_colorspace", asStrings(OutputColorSpaceOption.values()),
+                oldConfig.outputColorSpace.toString());
+
+        // Image bit format
+        dialog.addChoice("Read_as", asStrings(FormatOption.values()), oldConfig.format.toString());
+
+        // Interpolation quality
+        dialog.addChoice("Interpolation quality", asStrings(InterpolationQualityOption.values()),
+                oldConfig.interpolationQuality.toString());
+
+        dialog.addCheckbox("Half_size", oldConfig.halfSize);
+
+        dialog.addCheckbox("Do_not_rotate or scale pixels (preserve orientation and aspect ratio)",
+                oldConfig.doNotStretchOrRotate);
+
+        dialog.addHelp(HELP_URL);
+
+        //
+        // Show dialog
+        //
+        dialog.showDialog();
+
+        if (dialog.wasCanceled()) {
+            // No selection
+            return Optional.empty();
+        }
+
+        final DCRawReader.Config dstConfig = new DCRawReader.Config();
+        dstConfig.useTmpDir = dialog.getNextBoolean();
+        dstConfig.whiteBalance = WhiteBalanceOption.byName(dialog.getNextChoice());
+        dstConfig.doNotAutomaticallyBrightenTheImage = dialog.getNextBoolean();
+        dstConfig.outputColorSpace = OutputColorSpaceOption.byName(dialog.getNextChoice());
+        dstConfig.format = FormatOption.byName(dialog.getNextChoice());
+        dstConfig.interpolationQuality = InterpolationQualityOption.byName(dialog.getNextChoice());
+        dstConfig.halfSize = dialog.getNextBoolean();
+        dstConfig.doNotStretchOrRotate = dialog.getNextBoolean();
+
+        return Optional.of(dstConfig);
     }
 }

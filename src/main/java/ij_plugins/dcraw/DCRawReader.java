@@ -1,6 +1,6 @@
 /*
  * IJ-Plugins
- * Copyright (C) 2002-2021 Jarek Sacha
+ * Copyright (C) 2002-2022 Jarek Sacha
  * Author's email: jpsacha at gmail dot com
  *
  * This library is free software; you can redistribute it and/or
@@ -23,170 +23,282 @@
 package ij_plugins.dcraw;
 
 import ij.IJ;
-import ij.Menus;
-import ij.Prefs;
+import ij.ImagePlus;
+import ij_plugins.dcraw.util.ExecProxy;
 
-import java.io.*;
-import java.util.Arrays;
-import java.util.Vector;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 
 /**
  * Reads digital camera raw files using DCRAW executable.
- * More info on DCRAW at {@code http://www.cybercom.net/%7Edcoffin/dcraw/}.
+ * More info on DCRAW at <a href="http://www.cybercom.net/%7Edcoffin/dcraw/">http://www.cybercom.net/%7Edcoffin/dcraw/</a>.
  *
  * @author Jarek Sacha
  */
 public final class DCRawReader {
 
-    public static final String SYSTEM_PROPERTY_DCRAW_BIN = "dcrawExecutable.path";
-    private final Vector<LogListener> listeners = new Vector<>();
-    private String dcrawBinPath;
+    /**
+     * Raw image processing options.
+     */
+    public static class Config {
+        /**
+         * White balance to use: none, camera, averaging (-w, -a)
+         */
+        public WhiteBalanceOption whiteBalance = WhiteBalanceOption.CAMERA;
+        /**
+         * Do not automatically brighten the image (-W)
+         */
+        public boolean doNotAutomaticallyBrightenTheImage = true;
+        /**
+         * Output colorspace: raw, sRGB, Adobe, Wide, ProPhoto, XYZ, ACES  (-o [0-6])
+         */
+        public OutputColorSpaceOption outputColorSpace = OutputColorSpaceOption.RAW;
+        /**
+         * Output format, per channel: 8-bit, 16-bit, 16-bit linear
+         */
+        public FormatOption format = FormatOption.F_8_BIT;
 
-    private static String dcrawExecutableName() {
-        return IJ.isWindows() ? "dcraw_emu.exe" : "dcraw_emu";
+        /**
+         * Set the interpolation quality: linear, VNG, PPG, AHD, DCB, DHT, AAHD (-q N)
+         */
+        public InterpolationQualityOption interpolationQuality = InterpolationQualityOption.DHT;
+
+        /**
+         * Half-size color image (twice as fast as "interpolation quality: linear")
+         */
+        public boolean halfSize = false;
+        /**
+         * Don't stretch or rotate raw pixels (-j)
+         */
+        public boolean doNotStretchOrRotate = true;
+        /**
+         * Generate temporary image file in the default temporary directory.
+         * If {@code false} the file is generated in the same directory as the input image.
+         */
+        boolean useTmpDir = true;
     }
 
-    public void addLogListener(final LogListener listener) {
-        if (listener != null) {
-            listeners.add(listener);
-        }
-    }
+    private final Optional<LogListener> statusLogListener;
+    private final Optional<LogListener> errorLogListener;
 
-    public void removeLogListener(final LogListener listener) {
-        if (listener != null) {
-            listeners.remove(listener);
-        }
-    }
-
-    public void removeAllLogListeners() {
-        listeners.clear();
-    }
-
-    public void validateDCRaw() throws DCRawException {
-        if (dcrawBinPath == null) {
-            dcrawBinPath = locateDCRAW();
-        }
+    public DCRawReader() {
+        this.statusLogListener = Optional.empty();
+        this.errorLogListener = Optional.empty();
     }
 
     /**
-     * Attempt to locate DCRAW executable. Search locations locations:
-     * <ul>
-     * <li>Full path as specified by system property <tt>{@value #SYSTEM_PROPERTY_DCRAW_BIN}</tt> </li>
-     * <li>Full path as specified by ImageJ property <tt>{@value #SYSTEM_PROPERTY_DCRAW_BIN}</tt> (can be set in IJ_Prefs.txt)</li>
-     * <li>Inside {@code dcraw} subdirectory of ImageJ plugins directory.</li>
-     * <li>System path. In this case simply file name rather than full path will be returned.</li>
-     * </ul>
-     *
-     * @return location of DCRAW executable.
-     * @throws DCRawException if DCRAW cannot be found.
+     * @param statusLogListener callback used to process status messages while dcraw runs
+     * @param errorLogListener  callback used to process error messages
      */
-    private String locateDCRAW() throws DCRawException {
-        final String systemDCRawExecutablePath = System.getProperty(SYSTEM_PROPERTY_DCRAW_BIN, null);
-        final String exeRelativeToPluginsDir = "dcraw" + File.separator + dcrawExecutableName();
-        final File devEnvLocation = new File("plugins" + File.separator + exeRelativeToPluginsDir);
+    public DCRawReader(final LogListener statusLogListener,
+                       final LogListener errorLogListener) {
+        this.statusLogListener = Optional.ofNullable(statusLogListener);
+        this.errorLogListener = Optional.ofNullable(errorLogListener);
+    }
 
-        if (systemDCRawExecutablePath != null) {
-            // Try to read from a system property
-            final File file = new File(systemDCRawExecutablePath);
-            if (!file.exists() || file.isDirectory()) {
-                throw new DCRawException("System property '" + SYSTEM_PROPERTY_DCRAW_BIN
-                        + "' does not point to an existing DCRAW executable ["
-                        + file.getAbsolutePath() + "]");
-            }
-            dcrawBinPath = file.getAbsolutePath();
-        } else if (Prefs.get(SYSTEM_PROPERTY_DCRAW_BIN, null) != null) {
-            // Try to read from ImageJ properties
-            final String path = Prefs.get(SYSTEM_PROPERTY_DCRAW_BIN, null);
-            final File file = new File(path);
-            if (!file.exists()) {
-                throw new DCRawException("ImageJ property '" + SYSTEM_PROPERTY_DCRAW_BIN
-                        + "' (IJ_Prefs.txt) does not point to an existing DCRAW executable ["
-                        + file.getAbsolutePath() + "]");
-            }
-            dcrawBinPath = new File(path).getAbsolutePath();
-        } else if (Menus.getPlugInsPath() != null) {
-            // Try to locate in ImageJ plugins directory
-            final String path = Menus.getPlugInsPath() + File.separator + exeRelativeToPluginsDir;
-            final File file = new File(path);
-            if (!file.exists()) {
-                throw new DCRawException(
-                        "Unable to find DCRAW binary in ImageJ plugins folder. File does not exist: '"
-                                + file.getAbsolutePath() + "'.");
-            }
-            dcrawBinPath = new File(path).getAbsolutePath();
-        } else if (devEnvLocation.exists()) {
-            // This branch is intended primarily for execution in test environment
-            dcrawBinPath = devEnvLocation.getAbsolutePath();
-        } else {
-            // Attempt to use system path
-            dcrawBinPath = dcrawExecutableName();
+    /**
+     * @param statusLogListener callback used to process status messages while dcraw runs
+     * @param errorLogListener  callback used to process error messages
+     */
+    public DCRawReader(final Optional<LogListener> statusLogListener,
+                       final Optional<LogListener> errorLogListener) {
+        this.statusLogListener = statusLogListener;
+        this.errorLogListener = errorLogListener;
+    }
+
+    /**
+     * Validate that dcraw executable can be run.
+     *
+     * @throws DCRawException if the attempt to run dcraw executable fails
+     */
+    public void validateDCRawExec() throws DCRawException {
+        final ExecProxy proxy = createExecProxyCaller();
+        // Verify that could talk to DCRAW
+        proxy.validateExecutable();
+    }
+
+    /**
+     * RRead raw image
+     *
+     * @param rawFile input raw file
+     * @return decoded image
+     * @throws DCRawException when reading fails.
+     */
+    public ImagePlus read(final File rawFile) throws DCRawException {
+        return read(rawFile, new Config());
+    }
+
+    /**
+     * Read raw image.
+     *
+     * @param rawFile input raw file
+     * @param config  dcraw processing options
+     * @return decoded image
+     * @throws DCRawException when reading fails.
+     */
+    public ImagePlus read(final File rawFile, final Config config) throws DCRawException {
+
+        if (!rawFile.exists()) {
+            throw new DCRawException("Input file does not exist: " + rawFile.getAbsolutePath());
+        }
+
+        final File actualInput;
+        if (config.useTmpDir) {
+            // Copy file to a temp file to avoid overwriting data ast the source
+            // DCRAW always writes output in the same directory as the input file.
             try {
-                executeCommand(new String[]{dcrawBinPath});
-            } catch (DCRawException ex) {
-                throw new DCRawException("Failed to find DCRAW binary in system path.", ex);
+                actualInput = File.createTempFile("dcraw_", "_" + rawFile.getName());
+                actualInput.deleteOnExit();
+            } catch (final IOException e) {
+                throw new DCRawException("Failed to create temporary file for processing. " + e.getMessage(), e);
             }
+
+            {
+                final String m = "Copying input to " + actualInput.getAbsolutePath();
+                statusLogListener.ifPresent(l -> l.log(m));
+            }
+
+            try {
+                copyFile(rawFile, actualInput);
+            } catch (final IOException e) {
+                throw new DCRawException("Failed to copy image to a temporary file for processing. " + e.getMessage(), e);
+            }
+        } else {
+            actualInput = rawFile;
         }
 
-        return dcrawBinPath;
-    }
+        // Check if TIFF file existed before it will be written created by DCRAW
+        final File processedFile = new File(actualInput.getParentFile(), toProcessedFileName(actualInput.getName()));
+        final boolean removeProcessed = !processedFile.exists();
 
-    public String executeCommand(final String[] command) throws DCRawException {
-        validateDCRaw();
+        // Convert user choices to command line options
+        final List<String> commandList = buildCommandLine(config, actualInput);
 
-        final String[] fullCommand = new String[command.length + 1];
-        fullCommand[0] = dcrawBinPath;
-        System.arraycopy(command, 0, fullCommand, 1, command.length);
-
-        final Process process;
-        log("Executing command array: " + Arrays.toString(fullCommand));
-
+        final ImagePlus dst;
         try {
-            process = Runtime.getRuntime().exec(fullCommand);
-        } catch (final IOException e) {
-            throw new DCRawException("IO Error executing system command: '" + command[0] + "'.", e);
-        }
-
-        final StreamGrabber errorStreamGrabber = new StreamGrabber(process.getErrorStream(), "DCRAW: ");
-        final StreamGrabber outputStreamGrabber = new StreamGrabber(process.getInputStream(), "DCRAW: ");
-
-        try {
-
-            errorStreamGrabber.start();
-            outputStreamGrabber.start();
-
-            int r = process.waitFor();
-            if (r == 0) {
-                // Wait for outputStreamGrabber to complete
-                outputStreamGrabber.join();
-            } else {
-                final StringBuilder message = new StringBuilder();
-                message.append("Lookup thread terminated with code ").append(r).append(".");
-                final String errorOutput = errorStreamGrabber.getData().trim();
-                if (errorOutput.length() > 0) {
-                    message.append('\n').append(errorOutput);
+            runDCRaw(commandList);
+            dst = readProcessedImage(processedFile);
+        } finally {
+            //
+            // Cleanup
+            //
+            // Remove processed file if needed
+            if ((config.useTmpDir || removeProcessed) && processedFile.exists()) {
+                if (!processedFile.delete()) {
+                    errorLogListener.ifPresent(l -> l.log("Failed to delete the processed file: " + processedFile.getAbsolutePath()));
                 }
-                throw new DCRawException(message.toString());
             }
-        } catch (final InterruptedException e) {
-            final StringBuilder message = new StringBuilder("Thread Error executing system command.");
-            final String errorOutput = errorStreamGrabber.getData().trim();
-            if (errorOutput.length() > 0) {
-                message.append('\n').append(errorOutput);
+            // Remove temporary copy of the raw file
+            if (config.useTmpDir && actualInput.exists()) {
+                if (!actualInput.delete()) {
+                    errorLogListener.ifPresent(l -> l.log("Failed to delete temporary copy of the raw file: " + actualInput.getAbsolutePath()));
+                }
             }
-            throw new DCRawException(message.toString(), e);
         }
 
+        dst.setTitle(rawFile.getName());
 
-        return outputStreamGrabber.getData();
+        return dst;
     }
 
-    private void log(final String message) {
-        for (LogListener listener : listeners) {
-            listener.log(message);
+    private ExecProxy createExecProxyCaller() {
+        return new ExecProxy(
+                "dcraw_emu", "dcrawExecutable.path", statusLogListener, errorLogListener);
+    }
+
+    private List<String> buildCommandLine(final Config config, final File actualInput) {
+        // Command line components
+        final List<String> commandList = new ArrayList<>();
+
+        // Turn on verbose messages
+        commandList.add("-v");
+
+        // Convert images to TIFF (otherwise DCRAW may produce PPM or PGM depending on processing)
+        commandList.add("-T");
+
+        // White balance
+        if (!config.whiteBalance.getOption().trim().isEmpty()) {
+            commandList.add(config.whiteBalance.getOption());
+        }
+
+        // Brightness adjustment
+        if (config.doNotAutomaticallyBrightenTheImage) {
+            commandList.add("-W");
+        }
+
+        // Colorspace
+        commandList.add("-o");
+        commandList.add(config.outputColorSpace.getOption());
+
+        // Image bit format
+        if (!config.format.getOption().trim().isEmpty()) {
+            commandList.add(config.format.getOption());
+        }
+
+        // Interpolation quality
+        commandList.add("-q");
+        commandList.add(config.interpolationQuality.getOption());
+
+        // Extract at half size
+        if (config.halfSize) {
+            commandList.add("-h");
+        }
+
+        // Do not rotate or correct pixel aspect ratio
+        if (config.doNotStretchOrRotate) {
+            commandList.add("-j");
+        }
+
+        // Add input raw file
+        commandList.add(actualInput.getAbsolutePath());
+
+        return commandList;
+    }
+
+    private void runDCRaw(final List<String> commandList) throws DCRawException {
+        //
+        // Run DCRAW
+        //
+        final String[] command = commandList.toArray(new String[0]);
+
+        final ExecProxy proxy = createExecProxyCaller();
+        try {
+            ExecProxy.Result r = proxy.executeCommand(command);
+            if (!IJPUtils.isBlank(r.stdErr)) {
+                throw new DCRawException(r.stdErr);
+            }
+        } catch (DCRawException e) {
+            throw new DCRawException("Error running DCRaw backend. " + e.getMessage(), e);
         }
     }
 
+    private ImagePlus readProcessedImage(final File processedFile) throws DCRawException {
+        // Read PPM file
+        if (!processedFile.exists()) {
+            throw new DCRawException("Unable to locate DCRAW output TIFF file: '" + processedFile.getAbsolutePath() + "'.");
+        }
+        statusLogListener.ifPresent(l -> l.log("Opening: " + processedFile.getAbsolutePath()));
+        final ImagePlus imp = IJ.openImage(processedFile.getAbsolutePath());
+        if (imp == null) {
+            throw new DCRawException("Failed to open converted image file: " + processedFile.getAbsolutePath());
+        }
+
+        return imp;
+    }
+
+    private static void copyFile(final File sourceFile, final File destFile) throws IOException {
+        Files.copy(sourceFile.toPath(), destFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    private static String toProcessedFileName(final String rawFileName) {
+        return rawFileName + ".tiff";
+    }
 
     public enum WhiteBalanceOption {
         NONE("None", ""),
@@ -315,48 +427,4 @@ public final class DCRawReader {
             return name;
         }
     }
-
-
-    public interface LogListener {
-
-        void log(String message);
-    }
-
-    /**
-     * Utility class for grabbing process outputs.
-     */
-    private class StreamGrabber extends Thread {
-
-        private final InputStream inputStream;
-        private final StringBuffer data = new StringBuffer();
-        private final String statusPrefix;
-
-
-        public StreamGrabber(final InputStream inputStream, final String statusPrefix) {
-            this.inputStream = inputStream;
-            this.statusPrefix = statusPrefix;
-        }
-
-        @Override
-        public void run() {
-            try {
-                final BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    data.append(line).append('\n');
-                    final String message = statusPrefix + line;
-                    IJ.showStatus(message);
-                    log(message);
-                }
-                reader.close();
-            } catch (final IOException exception) {
-                exception.printStackTrace();
-            }
-        }
-
-        public String getData() {
-            return data.toString();
-        }
-    }
-
 }

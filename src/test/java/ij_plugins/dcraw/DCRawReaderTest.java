@@ -1,6 +1,6 @@
 /*
  * IJ-Plugins
- * Copyright (C) 2002-2021 Jarek Sacha
+ * Copyright (C) 2002-2022 Jarek Sacha
  * Author's email: jpsacha at gmail dot com
  *
  * This library is free software; you can redistribute it and/or
@@ -22,11 +22,11 @@
 
 package ij_plugins.dcraw;
 
-import ij.IJ;
 import ij.ImagePlus;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Optional;
 
 import static org.junit.Assert.*;
 
@@ -43,9 +43,9 @@ public final class DCRawReaderTest {
 
     @Test
     public void testValidateDCRaw() {
-        final DCRawReader dcRawReader = new DCRawReader();
+        final DCRawReader dcRaw = new DCRawReader();
         try {
-            dcRawReader.validateDCRaw();
+            dcRaw.validateDCRawExec();
             assertTrue(true);
         } catch (DCRawException ex) {
             fail(ex.getMessage());
@@ -66,28 +66,18 @@ public final class DCRawReaderTest {
                 fail("Unable to delete output file: " + outputFile.getAbsolutePath());
         assertFalse("Output file should not exists: " + outputFile.getAbsolutePath(), outputFile.exists());
 
+        LogListener logListener = message -> System.out.println("MESSAGE : " + message);
+        LogListener errorListener = message -> System.out.println("ERROR : " + message);
+
         // dcraw wrapper
-        final DCRawReader dcRawReader = new DCRawReader();
+        final DCRawReader dcRaw = new DCRawReader(Optional.of(logListener), Optional.of(errorListener));
 
-        // Listen to output messages
-        dcRawReader.addLogListener(message -> System.out.println("message = " + message));
+        final DCRawReader.Config config = new DCRawReader.Config();
+        config.interpolationQuality = DCRawReader.InterpolationQualityOption.HIGH_SPEED;
+        config.halfSize = true;
+        config.outputColorSpace = DCRawReader.OutputColorSpaceOption.SRGB;
 
-        // Execute dcraw
-        dcRawReader.executeCommand(new String[]{
-                "-v",      // Print verbose messages
-                "-q", "0", // Use high-speed, low-quality bilinear interpolation.
-                "-w",      // Use camera white balance, if possible
-                "-T",      // Write TIFF instead of PPM
-                "-j",      // Don't stretch or rotate raw pixels
-                "-W",      // Don't automatically brighten the image
-                inFile.getAbsolutePath()});
-
-        // Cleanup
-        dcRawReader.removeAllLogListeners();
-
-        // Load converted file, it is the same location as original raw file but with extension '.tiff'
-        assertTrue("Output file should exists: " + outputFile.getAbsolutePath(), outputFile.exists());
-        final ImagePlus imp = IJ.openImage(outputFile.getAbsolutePath());
-        assertNotNull("Cannot load TIFF image file: " + outputFile.getAbsolutePath(), imp);
+        final ImagePlus imp = dcRaw.read(inFile, config);
+        assertNotNull(imp);
     }
 }
