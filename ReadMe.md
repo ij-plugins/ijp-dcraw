@@ -115,9 +115,6 @@ Example of using `DCRawReader` API from a Java code. The source code is located
 in [src/test/java/demo/DCRawReaderDemo.java].
 
 ```java
-import java.io.File;
-
-import ij.IJ;
 import ij.ImagePlus;
 import ij_plugins.dcraw.DCRawException;
 import ij_plugins.dcraw.DCRawReader;
@@ -126,33 +123,11 @@ import java.io.File;
 
 class DCRawReaderDemo {
 
-   public static void main(String[] args) throws DCRawException {
+    public static void main(String[] args) throws DCRawException {
 
-      // Input file
-      final File inFile = new File("../test/data/IMG_5604.CR2");
-
-      // dcraw wrapper
-      final DCRawReader dcRawReader = new DCRawReader();
-
-      // Listen to output messages
-      dcRawReader.addLogListener(
-              m -> System.out.println("message = " + m));
-
-      // Execute dcraw
-      dcRawReader.executeCommand(new String[]{
-              "-v", // Print verbose messages
-              "-w", // Use camera white balance, if possible
-              "-T", // Write TIFF instead of PPM
-              "-j", // Don't stretch or rotate raw pixels
-              "-W", // Don't automatically brighten the image
-              inFile.getAbsolutePath()});
-
-      // Cleanup
-      dcRawReader.removeAllLogListeners();
-
-      // Load converted file, it is the same location as original raw file but with extension '.tiff'
-      final ImagePlus imp = IJ.openImage("test/data/IMG_5604.CR2.tiff");
-   }
+        final File inFile = new File("../test/data/IMG_5604.CR2");
+        final ImagePlus imp = new DCRawReader().read(inFile);
+    }
 }
 ```
 
