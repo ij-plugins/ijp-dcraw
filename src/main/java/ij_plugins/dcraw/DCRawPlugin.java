@@ -159,6 +159,9 @@ public class DCRawPlugin implements PlugIn {
         dialog.addCheckbox("Do_not_rotate or scale pixels (preserve orientation and aspect ratio)",
                 oldConfig.doNotStretchOrRotate);
 
+        dialog.addChoice("Flip image", asStrings(FlipImage.values()),
+                oldConfig.flipImage.toString());
+
         dialog.addHelp(HELP_URL);
 
         //
@@ -180,6 +183,7 @@ public class DCRawPlugin implements PlugIn {
         dstConfig.interpolationQuality = InterpolationQualityOption.byName(dialog.getNextChoice());
         dstConfig.halfSize = dialog.getNextBoolean();
         dstConfig.doNotStretchOrRotate = dialog.getNextBoolean();
+        dstConfig.flipImage = FlipImage.byName(dialog.getNextChoice());
 
         return Optional.of(dstConfig);
     }

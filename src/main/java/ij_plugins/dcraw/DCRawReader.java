@@ -80,6 +80,10 @@ public final class DCRawReader {
          */
         public boolean doNotStretchOrRotate = true;
         /**
+         * Flip image
+         */
+        public FlipImage flipImage = FlipImage.NONE;
+        /**
          * Generate temporary image file in the default temporary directory.
          * If {@code false} the file is generated in the same directory as the input image.
          */
@@ -257,6 +261,10 @@ public final class DCRawReader {
             commandList.add("-j");
         }
 
+        // Flip image
+        commandList.add("-t");
+        commandList.add(config.flipImage.getOption());
+
         // Add input raw file
         commandList.add(actualInput.getAbsolutePath());
 
@@ -320,6 +328,45 @@ public final class DCRawReader {
                 if (v.toString().equals(name)) return v;
             }
             throw new IllegalArgumentException("WhiteBalanceOption has no value with name '" + name + "'.");
+        }
+
+        public String getOption() {
+            return option;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    /**
+     * Image flipping options:<br>
+     * <tt>-t [0-7]  Flip image (0=none, 3=180, 5=90CCW, 6=90CW)</tt>
+     */
+    public enum FlipImage {
+        NONE("None", "0"),
+        FLIP_VERTICAL("Flip Vertical", "1"),
+        FLIP_HORIZONTAL("Flip Horizontal", "2"),
+        ROTATE_180("Rotate 180", "3"),
+        ROTATE_90_CCW("Rotate 90 CCW", "5"),
+        ROTATE_90_CCW_FLIP_VERTICAL("Rotate 90 CCW + Flip Vertical", "4"),
+        ROTATE_90_CC("Rotate_90_CC", "6"),
+        ROTATE_90_CC_FLIP_VERTICAL("Rotate 90 CC + Flip Vertical", "7");
+
+        private final String name;
+        private final String option;
+
+        FlipImage(final String name, final String option) {
+            this.name = name;
+            this.option = option;
+        }
+
+        public static FlipImage byName(final String name) {
+            for (FlipImage v : values()) {
+                if (v.toString().equals(name)) return v;
+            }
+            throw new IllegalArgumentException("FlipImage has no value with name '" + name + "'.");
         }
 
         public String getOption() {
