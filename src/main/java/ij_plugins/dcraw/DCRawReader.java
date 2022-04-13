@@ -342,7 +342,7 @@ public final class DCRawReader {
 
     /**
      * Image flipping options:<br>
-     * <tt>-t [0-7]  Flip image (0=none, 3=180, 5=90CCW, 6=90CW)</tt>
+     * -t [0-7]  Flip image (0=none, 3=180, 5=90CCW, 6=90CW)
      */
     public enum FlipImage {
         NONE("None", "0"),
