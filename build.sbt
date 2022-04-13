@@ -3,11 +3,11 @@ import java.net.URL
 
 name         := "ijp_dcraw"
 organization := "net.sf.ij-plugins"
-version      := "1.6.1-SNAPSHOT"
+version      := "1.7.0"
 
 homepage             := Some(new URL("https://github.com/ij-plugins/ijp-dcraw"))
 organizationHomepage := Some(url("https://github.com/ij-plugins"))
-startYear            := Some(2008)
+startYear           := Some(2008)
 licenses             := Seq(("LGPL-2.1", new URL("http://opensource.org/licenses/LGPL-2.1")))
 description          := "ijp-dcraw provides ImageJ plugin to read raw images using DCRAW. " +
   "For more detailed information see IJP-ImageIO home page: https://github.com/ij-plugins/ijp-dcraw."
