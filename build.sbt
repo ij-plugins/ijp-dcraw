@@ -3,7 +3,7 @@ import java.net.URL
 
 name         := "ijp_dcraw"
 organization := "net.sf.ij-plugins"
-version      := "1.6.1"
+version      := "1.6.1-SNAPSHOT"
 
 homepage             := Some(new URL("https://github.com/ij-plugins/ijp-dcraw"))
 organizationHomepage := Some(url("https://github.com/ij-plugins"))
@@ -45,8 +45,10 @@ prepareRun := {
 
   val dcrawFiles = Seq(
     baseDirectory.value / "binaries" / "windows" / "dcraw_emu.exe",
+    baseDirectory.value / "binaries" / "windows" / "raw-identify.exe",
     baseDirectory.value / "binaries" / "windows" / "libraw.dll",
-    baseDirectory.value / "binaries" / "macOS"   / "dcraw_emu"
+    baseDirectory.value / "binaries" / "macOS"   / "dcraw_emu",
+    baseDirectory.value / "binaries" / "macOS"   / "raw-identify",
     )
 
   dcrawFiles.foreach{f => sbt.IO.copyFile(f, dcrawDstDir / f.name)}

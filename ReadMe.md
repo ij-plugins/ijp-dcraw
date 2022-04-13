@@ -7,18 +7,23 @@ ijp-dcraw
 provided by [dcraw] tool. Current versions is using [LibRaw]/`dcraw_emu` tool. The hundreds of supported cameras are
 listed on [LibRaw Supported Cameras] page.
 
+There are two plugins:
+
+* __DCRaw Reader__ - reads images in camera raw format
+* __DCRaw Identify__ - provides info about the raw image, like camera make and metadata contained in the raw file
+
 ![Image Calibrator](assets/DCRaw_Reader_Dialog.png)
 
-`ijp-dcraw` distribution, available from [Releases] page, provides binaries for Windows and macOS. Binaries for other
+`ijp-dcraw` distribution, available from [Releases] page, provides native binaries for Windows and macOS. Binaries for other
 system can be added manually.
 
-By default, the "DCRaw Reader" plugin looks for the `dcraw_emu` binary in subdirectory `dcraw` of ImageJ plugins folder.
+By default, the "DCRaw Reader" plugin looks for the `dcraw_emu` and `raw-identify` executables in the subdirectory `dcraw` of ImageJ plugins folder.
 Alternative location can be specified by one of:
 
-1. Setting Java system property `dcrawExecutable.path` to location of dcraw executable, for instance:
+1. Setting Java system property `dcrawExecutable.path` and `raw-identifyExecutable.path` to location of the `dcraw` and `raw-identify` executables, for instance:
 
   ```
-    -DdcrawExecutable.path=bin/dcraw_emu.exe
+    -DdcrawExecutable.path=bin/dcraw_emu.exe -Draw-identifyExecutable.path=bin/raw-identify.exe
   ```
 
 2. or adding property `.dcrawExecutable.path` to ImageJ properties file `IJ_Props.txt`. Note period at the beginning of
@@ -26,6 +31,7 @@ Alternative location can be specified by one of:
 
   ```
     .dcrawExecutable.path=C:/apps/bin/dcraw_emu.exe
+    .raw-identifyExecutable.path==C:/apps/bin/raw-identify.exe
   ```
 
 Installation
@@ -33,7 +39,7 @@ Installation
 
 1. Download `ijp-dcraw_plugins_*_win_macos.zip` from the [Releases] page. Binaries, taken from the [LibRaw] release are
    provided for Windows and macOS.
-2. Unzip to ImageJ plugins directory. By default, the DCRaw Reader looks for the `dcraw_emu` binary in the
+2. Unzip to ImageJ plugins directory. By default, the DCRaw Reader looks for the `dcraw_emu` and `raw-identify` executables in the
    subdirectory "dcraw" of the ImageJ plugins folder.
 3. Restart ImageJ
 
@@ -49,7 +55,7 @@ Related Plugins
 Tips and Tricks
 ---------------
 
-### See Backend Options Passed to `dcraw_emu`
+### See What Backend Options Passed to `dcraw_emu`
 
 If you wander what is going on behind the scenes, how `dcraw_emu` executable is used, you can see the exact command line
 ij-dcraw is executing by turning on the "Debug Mode". Select in ImageJ menu: "Edit" > "Options" > "Misc" and select "
@@ -79,32 +85,32 @@ File.makeDirectory(dirDest);
 setBatchMode(true);
 fileNumber = 0;
 while (fileNumber < fileList.length) {
-   id = fileList[fileNumber++];
+    id = fileList[fileNumber++];
 
-   print(toString(fileNumber) + "/" + toString(fileList.length) + ": " + id);
+    print(toString(fileNumber) + "/" + toString(fileList.length) + ": " + id);
 
-   // Read input image
-   run("DCRaw Reader...",
-           "open=" + dirSrc + id + " " +
-           "use_temporary_directory " +
-           "white_balance=[Camera white balance] " +
-           //            "do_not_automatically_brighten " +
-           "output_colorspace=[sRGB] " +
-           "read_as=[8-bit] " +
-           "interpolation=[DHT] " +
-           //            "half_size " +
-           //            "do_not_rotate " +
-           "");
-   idSrc = getImageID();
+    // Read input image
+    run("DCRaw Reader...",
+        "open=" + dirSrc + id + " " +
+        "use_temporary_directory " +
+        "white_balance=[Camera white balance] " +
+        //            "do_not_automatically_brighten " +
+        "output_colorspace=[sRGB] " +
+        "read_as=[8-bit] " +
+        "interpolation=[DHT] " +
+        //            "half_size " +
+        //            "do_not_rotate " +
+        "");
+    idSrc = getImageID();
 
-   // Save result
-   saveAs("Tiff", dirDest + id);
+    // Save result
+    saveAs("Tiff", dirDest + id);
 
-   // Cleanup
-   if (isOpen(idSrc)) {
-      selectImage(idSrc);
-      close();
-   }
+    // Cleanup
+    if (isOpen(idSrc)) {
+        selectImage(idSrc);
+        close();
+    }
 }
 print(caption + " - Completed");
 ```
@@ -132,7 +138,8 @@ class DCRawReaderDemo {
 ```
 
 ### Using low-level API to call DCRaw
-You can also call `dcraw` by passing command line options. This may give access to some functionality 
+
+You can also call `dcraw` by passing command line options. This may give access to some functionality
 that may not be yet exposed through higher level `DCRawReader` API.
 
 ```java
