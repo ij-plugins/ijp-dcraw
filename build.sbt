@@ -3,7 +3,7 @@ import java.net.URL
 
 name         := "ijp_dcraw"
 organization := "net.sf.ij-plugins"
-version      := "1.6.1"
+version      := "1.6.1-SNAPSHOT"
 
 homepage             := Some(new URL("https://github.com/ij-plugins/ijp-dcraw"))
 organizationHomepage := Some(url("https://github.com/ij-plugins"))
