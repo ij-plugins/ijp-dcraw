@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,7 +51,7 @@ public final class DCRawReader {
      */
     public static class Config {
         /**
-         * White balance to use: none, camera, averaging (-w, -a)
+         * White balance to use: disable (-r 1 1 1 1), none, camera (-w), averaging (-a)
          */
         public WhiteBalanceOption whiteBalance = WhiteBalanceOption.CAMERA;
         /**
@@ -222,16 +223,16 @@ public final class DCRawReader {
         // Command line components
         final List<String> commandList = new ArrayList<>();
 
-        // Turn on verbose messages
+        // Turn on verbose messages (-v repeated for increased verbosity)
+        commandList.add("-v");
+        commandList.add("-v");
         commandList.add("-v");
 
         // Convert images to TIFF (otherwise DCRAW may produce PPM or PGM depending on processing)
         commandList.add("-T");
 
         // White balance
-        if (!config.whiteBalance.getOption().trim().isEmpty()) {
-            commandList.add(config.whiteBalance.getOption());
-        }
+        commandList.addAll(Arrays.asList(config.whiteBalance.getOption()));
 
         // Brightness adjustment
         if (config.doNotAutomaticallyBrightenTheImage) {
@@ -311,14 +312,15 @@ public final class DCRawReader {
     }
 
     public enum WhiteBalanceOption {
-        NONE("None", ""),
-        CAMERA("Camera white balance", "-w"),
-        AVERAGING("Averaging the entire image", "-a");
+        DISABLE("Disable", new String[]{"-r", "1", "1", "1", "1"}),
+        DERIVED("Derived", new String[0]),
+        CAMERA("Camera white balance", new String[]{"-w"}),
+        AVERAGING("Averaging the entire image", new String[]{"-a"});
         private final String name;
-        private final String option;
+        private final String[] option;
 
 
-        WhiteBalanceOption(final String name, final String option) {
+        WhiteBalanceOption(final String name, final String[] option) {
             this.name = name;
             this.option = option;
         }
@@ -330,7 +332,7 @@ public final class DCRawReader {
             throw new IllegalArgumentException("WhiteBalanceOption has no value with name '" + name + "'.");
         }
 
-        public String getOption() {
+        public String[] getOption() {
             return option;
         }
 
