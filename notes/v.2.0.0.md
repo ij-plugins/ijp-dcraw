@@ -1,5 +1,7 @@
-v.1.7.0
+v.2.0.0
 ========
+This is a major feature release. New featured were added to "DCRaw reader". Mew plugins were added: "DCRaw Identify"
+and "DCRaw Unprocessed". The Java API for the DCRaw Reader changed.
 
 ### Breaking changes:
 
@@ -9,7 +11,8 @@ v.1.7.0
 
 ### New features:
 
-* Read raw metadata using 'raw-identify' tool [#7]
+* "DCRaw Identify" plugin - read raw metadata using 'raw-identify' tool [#7]
+* "DCRaw Unprocessed" plugin - read unprocessed pixel pattern using 'unprocessed_raw' tool [#8]
 * Friendlier API for using DCRawReader from Java [#11]
 * Improve Java 8 binary compatibility [#12]
 * DCRaw Reader supports image flipping options [#14]
@@ -30,6 +33,8 @@ v.1.7.0
 [LibRaw]: https://www.libraw.org/about
 
 [#7]: https://github.com/ij-plugins/ijp-dcraw/issues/7
+
+[#8]: https://github.com/ij-plugins/ijp-dcraw/issues/8
 
 [#11]: https://github.com/ij-plugins/ijp-dcraw/issues/11
 

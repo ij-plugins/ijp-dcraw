@@ -13,6 +13,8 @@ There are two plugins:
 
 * __DCRaw Reader__ - reads images in camera raw format
 * __DCRaw Identify__ - provides info about the raw image, like camera make and metadata contained in the raw file
+* __DCRaw Unprocessed__ - reads mostly unprocessed raw image, it may be still before demosaicing. You may need a plugin
+  like [ijp-DeBayer2SX] to convert it to a color image.
 
 ![Image Calibrator](assets/DCRaw_Reader_Dialog.png)
 
@@ -24,8 +26,9 @@ By default, the "DCRaw Reader" plugin looks for the `dcraw_emu` and `raw-identif
 subdirectory `dcraw` of ImageJ plugins folder.
 Alternative location can be specified by one of:
 
-1. Setting Java system property `dcrawExecutable.path` and `raw-identifyExecutable.path` to location of the `dcraw`
-   and `raw-identify` executables, for instance:
+1. Setting Java system property `dcrawExecutable.path`, `raw-identifyExecutable.path`,
+   and `unprocessed_rawExecutable.path` to location of the `dcraw`, `raw-identify`, and `unprocessed_raw` executables,
+   for instance:
 
   ```
     -DdcrawExecutable.path=bin/dcraw_emu.exe -Draw-identifyExecutable.path=bin/raw-identify.exe
@@ -37,6 +40,7 @@ Alternative location can be specified by one of:
   ```
     .dcrawExecutable.path=C:/apps/bin/dcraw_emu.exe
     .raw-identifyExecutable.path==C:/apps/bin/raw-identify.exe
+    .unprocessed_rawExecutable.path==C:/apps/bin/unprocessed_raw.exe
   ```
 
 Installation
