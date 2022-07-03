@@ -45,8 +45,10 @@ prepareRun := {
 
   val dcrawFiles = Seq(
     baseDirectory.value / "binaries" / "windows" / "dcraw_emu.exe",
+    baseDirectory.value / "binaries" / "windows" / "raw-identify.exe",
     baseDirectory.value / "binaries" / "windows" / "libraw.dll",
-    baseDirectory.value / "binaries" / "macOS"   / "dcraw_emu"
+    baseDirectory.value / "binaries" / "macOS"   / "dcraw_emu",
+    baseDirectory.value / "binaries" / "macOS"   / "raw-identify",
     )
 
   dcrawFiles.foreach{f => sbt.IO.copyFile(f, dcrawDstDir / f.name)}
