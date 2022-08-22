@@ -79,5 +79,7 @@ public final class DCRawReaderTest {
 
         final ImagePlus imp = dcRaw.read(inFile, config);
         assertNotNull(imp);
+        assertEquals(3908 / 2, imp.getWidth());
+        assertEquals(2602 / 2, imp.getHeight());
     }
 }
