@@ -3,7 +3,7 @@ import java.net.URL
 
 name         := "ijp_dcraw"
 organization := "net.sf.ij-plugins"
-version      := "2.0.0-SNAPSHOT"
+version      := "2.0.0.1-SNAPSHOT"
 
 homepage             := Some(new URL("https://github.com/ij-plugins/ijp-dcraw"))
 organizationHomepage := Some(url("https://github.com/ij-plugins"))
@@ -13,7 +13,7 @@ description          := "ijp-dcraw provides ImageJ plugin to read raw images usi
   "For more detailed information see IJP-ImageIO home page: https://github.com/ij-plugins/ijp-dcraw."
 
 libraryDependencies ++= Seq(
-  "net.imagej"   % "ij"              % "1.53r",
+  "net.imagej"   % "ij"              % "1.53s",
   "junit"        % "junit"           % "4.13.2"  % "test",
   "com.novocode" % "junit-interface" % "0.11"    % "test->default"
   )
