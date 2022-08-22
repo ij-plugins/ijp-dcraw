@@ -41,8 +41,7 @@ class DCRawReaderDemo {
 
     public static void main(String[] args) throws DCRawException {
 
-//        final File inFile = new File("../test/data/IMG_5604.CR2");
-        final File inFile = new File("C:/Users/ac4566/Osobiste/Projects/IJ-Plugins/ij-plugins.github/ijp-dcraw/binaries/windows/raw-identify.exe");
+        final File inFile = new File("../test/data/IMG_5604.CR2");
         final ImagePlus imp = new DCRawReader().read(inFile);
         System.out.println("Loaded converted raw file: " + imp.getWidth() + " by " + imp.getHeight());
     }
