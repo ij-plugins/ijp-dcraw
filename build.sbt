@@ -8,12 +8,12 @@ version      := "1.7.1.1-SNAPSHOT"
 homepage             := Some(new URL("https://github.com/ij-plugins/ijp-dcraw"))
 organizationHomepage := Some(url("https://github.com/ij-plugins"))
 startYear           := Some(2008)
-licenses             := Seq(("LGPL-2.1", new URL("http://opensource.org/licenses/LGPL-2.1")))
+licenses             := Seq(("LGPL-2.1", new URL("https://opensource.org/licenses/LGPL-2.1")))
 description          := "ijp-dcraw provides ImageJ plugin to read raw images using DCRAW. " +
   "For more detailed information see IJP-ImageIO home page: https://github.com/ij-plugins/ijp-dcraw."
 
 libraryDependencies ++= Seq(
-  "net.imagej"   % "ij"              % "1.54b",
+  "net.imagej"   % "ij"              % "1.54d",
   "junit"        % "junit"           % "4.13.2"  % "test",
   "com.novocode" % "junit-interface" % "0.11"    % "test->default"
   )
