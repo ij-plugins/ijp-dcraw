@@ -160,7 +160,7 @@ public final class DCRawReader {
             // Copy file to a temp file to avoid overwriting data ast the source
             // DCRAW always writes output in the same directory as the input file.
             try {
-                actualInput = File.createTempFile("dcraw_", "_" + rawFile.getName());
+                actualInput = Files.createTempFile("dcraw_", "_" + rawFile.getName()).toFile();
                 actualInput.deleteOnExit();
             } catch (final IOException e) {
                 throw new DCRawException("Failed to create temporary file for processing. " + e.getMessage(), e);
